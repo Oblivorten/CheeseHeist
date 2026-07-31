@@ -6,18 +6,28 @@ namespace CheeseHeist.Adapters
 {
     public class Bootstrap
     {
-        public Loop CreateLoop(InputActionAsset inputActions, PlayerBody playerBody)
+        public Loop CreateLoop(
+            InputActionAsset inputActions, 
+            PlayerBody playerBody,
+            VirtualJoystickInputAdapter joystick,
+            GyroscopeInputAdapter gyroscope)
         {
             var loop = new Loop();
 
             var playerData = new PlayerData
             {
                 MoveSpeed = 5f
-            }; 
+            };
 
-            var inputProvider = new KeyboardInputAdapter(inputActions);
+            var keyboard = new KeyboardInputAdapter(inputActions);
 
-            var movementSystem = new MovementSystem(playerData, inputProvider);
+            var inputRouter = new PlayerInputRouter();
+
+            inputRouter.SetProvider(joystick);
+
+            var movementSystem = new MovementSystem(
+                playerData, 
+                inputRouter);
 
             playerBody.Initialize(playerData);
 
