@@ -19,10 +19,16 @@ namespace CheeseHeist.Adapters
             _playerData = playerData;
         }
 
+        public void SyncPositionToData()
+        {
+            var p = _rigidbody.position;
+            _playerData.Position = new Vector3Data(p.x, p.y, p.z);
+        }
+
         public void ApplyVelocity()
         {
-            var velocity = _playerData.Velocity;
-            _rigidbody.linearVelocity = new Vector3(velocity.X, velocity.Y, velocity.Z);
+            var v = _playerData.Velocity;
+            _rigidbody.linearVelocity = new Vector3(v.X, v.Y, v.Z);
         }
     }
 }

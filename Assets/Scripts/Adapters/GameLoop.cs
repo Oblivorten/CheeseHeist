@@ -1,39 +1,30 @@
 using UnityEngine;
-using CheeseHeist.Core;
-using UnityEngine.InputSystem;
 
 namespace CheeseHeist.Adapters
 {
     public class GameLoop : MonoBehaviour
     {
-        [SerializeField] private InputActionAsset _inputActions;
-        [SerializeField] private PlayerBody _playerBody;
-        [SerializeField] private VirtualJoystickInputAdapter _joyStick;
-        [SerializeField] private GyroscopeInputAdapter _gyroscope;
+        [SerializeField] private SceneReferences _refs;
         [SerializeField] private InputSource _activeInputSource = InputSource.Keyboard;
-        [SerializeField] private float _acceleration = 20f;
-        [SerializeField] private float _deceleration = 25f;
+        [SerializeField] private MovementConfig _movementConfig;
+        [SerializeField] private TrailConfig _trailConfig;
 
-        private Loop _loop;
+        private GameContext _context;
 
         private void Awake()
         {
             var bootstrap = new Bootstrap();
-            _loop = bootstrap.CreateLoop(
-                _inputActions,
-                _playerBody,
-                _joyStick,
-                _gyroscope,
-                _activeInputSource,
-                _acceleration,
-                _deceleration);
+            _context = bootstrap.CreateGame(_refs, _activeInputSource, _movementConfig, _trailConfig);
         }
 
         private void FixedUpdate()
         {
             float dt = Time.fixedDeltaTime;
-            _loop.Tick(dt);
-            _playerBody.ApplyVelocity();
+
+            _refs.PlayerBody.SyncPositionToData();
+            _context.Loop.Tick(dt);
+            _refs.PlayerBody.ApplyVelocity();
+            _refs.TrailView.Sync(_context.TrailSystem.Segments);
         }
     }
 }

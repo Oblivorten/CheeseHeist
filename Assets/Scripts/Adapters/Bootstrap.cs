@@ -1,46 +1,42 @@
 using CheeseHeist.Core;
 using CheeseHeist.Systems;
-using UnityEngine.InputSystem;
 
 namespace CheeseHeist.Adapters
 {
     public class Bootstrap
     {
-        public Loop CreateLoop(
-            InputActionAsset inputActions,
-            PlayerBody playerBody,
-            VirtualJoystickInputAdapter joystick,
-            GyroscopeInputAdapter gyroscope,
+        public GameContext CreateGame(
+            SceneReferences refs,
             InputSource activeInputSource,
-            float acceleration,
-            float deceleration)
+            MovementConfig movementConfig,
+            TrailConfig trailConfig)
         {
             var loop = new Loop();
+            var playerData = new PlayerData { MoveSpeed = 5f };
 
-            var playerData = new PlayerData
-            {
-                MoveSpeed = 5f
-            };
-
-            var keyboard = new KeyboardInputAdapter(inputActions);
+            var keyboard = new KeyboardInputAdapter(refs.InputActions);
             var inputRouter = new PlayerInputRouter();
 
             IMoveInputProvider selectedProvider = activeInputSource switch
             {
                 InputSource.Keyboard => keyboard,
-                InputSource.VirtualJoystick => joystick,
-                InputSource.Gyroscope => gyroscope,
+                InputSource.VirtualJoystick => refs.Joystick,
+                InputSource.Gyroscope => refs.Gyroscope,
                 _ => keyboard
             };
-
             inputRouter.SetProvider(selectedProvider);
 
-            var movementSystem = new MovementSystem(playerData, inputRouter, acceleration, deceleration);
-
-            playerBody.Initialize(playerData);
+            var movementSystem = new MovementSystem(
+                playerData, inputRouter, movementConfig.Acceleration, movementConfig.Deceleration);
+            refs.PlayerBody.Initialize(playerData);
             loop.AddSystem(movementSystem);
 
-            return loop;
+            var trailSystem = new TrailSystem(
+                playerData, trailConfig.SpawnDistance, trailConfig.Lifetime, trailConfig.Capacity);
+            refs.TrailView.Initialize(trailConfig.Capacity);
+            loop.AddSystem(trailSystem);
+
+            return new GameContext { Loop = loop, TrailSystem = trailSystem };
         }
     }
 }
