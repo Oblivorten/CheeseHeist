@@ -19,15 +19,10 @@ namespace CheeseHeist.Adapters
             _playerData = playerData;
         }
 
-        private void FixedUpdate()
+        public void ApplyVelocity()
         {
             var velocity = _playerData.Velocity;
-
-            _rigidbody.linearVelocity = new Vector3(
-                velocity.X,
-                velocity.Y,
-                velocity.Z
-            );
+            _rigidbody.linearVelocity = new Vector3(velocity.X, velocity.Y, velocity.Z);
         }
     }
 }

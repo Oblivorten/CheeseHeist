@@ -10,6 +10,10 @@ namespace CheeseHeist.Adapters
         [SerializeField] private PlayerBody _playerBody;
         [SerializeField] private VirtualJoystickInputAdapter _joyStick;
         [SerializeField] private GyroscopeInputAdapter _gyroscope;
+        [SerializeField] private InputSource _activeInputSource = InputSource.Keyboard;
+        [SerializeField] private float _acceleration = 20f;
+        [SerializeField] private float _deceleration = 25f;
+
         private Loop _loop;
 
         private void Awake()
@@ -19,12 +23,17 @@ namespace CheeseHeist.Adapters
                 _inputActions,
                 _playerBody,
                 _joyStick,
-                _gyroscope);
+                _gyroscope,
+                _activeInputSource,
+                _acceleration,
+                _deceleration);
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
-            _loop.Tick(Time.deltaTime);
+            float dt = Time.fixedDeltaTime;
+            _loop.Tick(dt);
+            _playerBody.ApplyVelocity();
         }
     }
 }

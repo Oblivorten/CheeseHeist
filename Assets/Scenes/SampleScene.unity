@@ -1584,6 +1584,9 @@ MonoBehaviour:
   _playerBody: {fileID: 669289548}
   _joyStick: {fileID: 223851751}
   _gyroscope: {fileID: 544110158}
+  _activeInputSource: 1
+  _acceleration: 20
+  _deceleration: 25
 --- !u!1 &1276580888
 GameObject:
   m_ObjectHideFlags: 0

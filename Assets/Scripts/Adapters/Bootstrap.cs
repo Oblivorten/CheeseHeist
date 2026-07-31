@@ -7,10 +7,13 @@ namespace CheeseHeist.Adapters
     public class Bootstrap
     {
         public Loop CreateLoop(
-            InputActionAsset inputActions, 
+            InputActionAsset inputActions,
             PlayerBody playerBody,
             VirtualJoystickInputAdapter joystick,
-            GyroscopeInputAdapter gyroscope)
+            GyroscopeInputAdapter gyroscope,
+            InputSource activeInputSource,
+            float acceleration,
+            float deceleration)
         {
             var loop = new Loop();
 
@@ -20,17 +23,21 @@ namespace CheeseHeist.Adapters
             };
 
             var keyboard = new KeyboardInputAdapter(inputActions);
-
             var inputRouter = new PlayerInputRouter();
 
-            inputRouter.SetProvider(joystick);
+            IMoveInputProvider selectedProvider = activeInputSource switch
+            {
+                InputSource.Keyboard => keyboard,
+                InputSource.VirtualJoystick => joystick,
+                InputSource.Gyroscope => gyroscope,
+                _ => keyboard
+            };
 
-            var movementSystem = new MovementSystem(
-                playerData, 
-                inputRouter);
+            inputRouter.SetProvider(selectedProvider);
+
+            var movementSystem = new MovementSystem(playerData, inputRouter, acceleration, deceleration);
 
             playerBody.Initialize(playerData);
-
             loop.AddSystem(movementSystem);
 
             return loop;

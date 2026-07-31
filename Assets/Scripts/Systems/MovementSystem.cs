@@ -6,11 +6,15 @@ namespace CheeseHeist.Systems
     {
         private readonly PlayerData _player;
         private readonly IMoveInputProvider _input;
+        private readonly float _acceleration;
+        private readonly float _deceleration;
 
-        public MovementSystem(PlayerData player, IMoveInputProvider input)
+        public MovementSystem(PlayerData player, IMoveInputProvider input, float acceleration, float deceleration)
         {
             _player = player;
             _input = input;
+            _acceleration = acceleration;
+            _deceleration = deceleration;
         }
 
         public void Tick(float deltaTime)
@@ -18,21 +22,36 @@ namespace CheeseHeist.Systems
             float x = _input.Horizontal;
             float z = _input.Vertical;
 
-            float magnitudeSquared = x * x + z * z;
-
-            if (magnitudeSquared > 1f)
+            float magSq = x * x + z * z;
+            if (magSq > 1f)
             {
-                float magnitude = System.MathF.Sqrt(magnitudeSquared);
-
-                x /= magnitude;
-                z /= magnitude;
+                float mag = System.MathF.Sqrt(magSq);
+                x /= mag;
+                z /= mag;
             }
 
-            _player.Velocity = new Vector3Data(
-                x * _player.MoveSpeed,
-                0f,
-                z * _player.MoveSpeed
-            );
+            var target = new Vector3Data(x * _player.MoveSpeed, 0f, z * _player.MoveSpeed);
+
+            bool speedingUp = SqrMag(target) > SqrMag(_player.Velocity);
+            float rate = speedingUp ? _acceleration : _deceleration;
+
+            _player.Velocity = MoveTowards(_player.Velocity, target, rate * deltaTime);
+        }
+
+        private static float SqrMag(Vector3Data v) => v.X * v.X + v.Z * v.Z;
+
+        private static Vector3Data MoveTowards(Vector3Data current, Vector3Data target, float maxDelta)
+        {
+            float dx = target.X - current.X;
+            float dz = target.Z - current.Z;
+            float dist = System.MathF.Sqrt(dx * dx + dz * dz);
+
+            if (dist <= maxDelta || dist == 0f)
+            {
+                return target;
+            }
+
+            return new Vector3Data(current.X + dx / dist * maxDelta, 0f, current.Z + dz / dist * maxDelta);
         }
     }
 }
