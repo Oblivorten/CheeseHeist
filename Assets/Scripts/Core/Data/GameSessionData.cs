@@ -4,5 +4,7 @@ namespace CheeseHeist.Core
     {
         public int Score;
         public int Lives;
+        public float ElapsedTime;
+        public float DifficultyMultiplier = 1f;
     }
 }

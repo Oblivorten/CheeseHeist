@@ -6,6 +6,7 @@ namespace CheeseHeist.Systems
     {
         private readonly PlayerData _player;
         private readonly CatData _cat;
+        private readonly GameSessionData _session;
         private readonly GameEvents _events;
         private readonly float _patrolDistance;
         private readonly float _lungeDistance;
@@ -15,11 +16,12 @@ namespace CheeseHeist.Systems
         private Vector3Data _lastPlayerFacing = new Vector3Data(0f, 0f, 1f);
         private bool _initialized;
 
-        public CatAISystem(PlayerData player, CatData cat, GameEvents events,
+        public CatAISystem(PlayerData player, CatData cat, GameSessionData session, GameEvents events,
             float patrolDistance, float lungeDistance, float lungeWindowDuration, float followSpeed)
         {
             _player = player;
             _cat = cat;
+            _session = session;
             _events = events;
             _patrolDistance = patrolDistance;
             _lungeDistance = lungeDistance;
@@ -31,7 +33,7 @@ namespace CheeseHeist.Systems
 
         private void HandleCollision()
         {
-            if (_cat.IsCaught) return; 
+            if (_cat.IsCaught) return;
 
             if (_cat.State == CatState.Lunge)
             {
@@ -78,8 +80,10 @@ namespace CheeseHeist.Systems
                 return;
             }
 
+            float effectiveFollowSpeed = _followSpeed * _session.DifficultyMultiplier;
+
             var previous = _cat.Position;
-            _cat.Position = MoveTowards(_cat.Position, desired, _followSpeed * deltaTime);
+            _cat.Position = MoveTowards(_cat.Position, desired, effectiveFollowSpeed * deltaTime);
 
             _cat.Velocity = new Vector3Data(
                 (_cat.Position.X - previous.X) / deltaTime,

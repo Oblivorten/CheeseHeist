@@ -13,7 +13,8 @@ namespace CheeseHeist.Adapters
             SkidConfig skidConfig,
             LivesConfig livesConfig,
             CatConfig catConfig,
-            CheeseConfig cheeseConfig)
+            CheeseConfig cheeseConfig,
+            DifficultyConfig difficultyConfig)
         {
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
@@ -33,8 +34,11 @@ namespace CheeseHeist.Adapters
             };
             inputRouter.SetProvider(selectedProvider);
 
+            var difficultySystem = new DifficultySystem(
+                session, events, difficultyConfig.RampDuration, difficultyConfig.MaxMultiplier);
+
             var movementSystem = new MovementSystem(
-                playerData, inputRouter, movementConfig.Acceleration, movementConfig.Deceleration);
+                playerData, session, inputRouter, movementConfig.Acceleration, movementConfig.Deceleration);
             refs.PlayerBody.Initialize(playerData);
 
             var trailSystem = new TrailSystem(
@@ -51,15 +55,19 @@ namespace CheeseHeist.Adapters
                 session, events, livesConfig.StartingLives, livesConfig.InvulnerabilityDuration);
 
             var catAISystem = new CatAISystem(
-                playerData, catData, events,
+                playerData, catData, session, events,
                 catConfig.PatrolDistance, catConfig.LungeDistance, catConfig.LungeWindowDuration, catConfig.FollowSpeed);
 
-            foreach (var pickup in refs.CheesePickups)
+            if (refs.CheesePickups != null)
             {
-                pickup.Initialize(events, cheeseConfig.PointsPerCheese);
+                foreach (var pickup in refs.CheesePickups)
+                {
+                    pickup.Initialize(events, cheeseConfig.PointsPerCheese);
+                }
             }
             var scoreSystem = new ScoreSystem(session, events);
 
+            loop.AddSystem(difficultySystem);
             loop.AddSystem(trailCollisionSystem);
             loop.AddSystem(skidSystem);
             loop.AddSystem(livesSystem);

@@ -5,13 +5,15 @@ namespace CheeseHeist.Systems
     public class MovementSystem : ITickable
     {
         private readonly PlayerData _player;
+        private readonly GameSessionData _session;
         private readonly IMoveInputProvider _input;
         private readonly float _acceleration;
         private readonly float _deceleration;
 
-        public MovementSystem(PlayerData player, IMoveInputProvider input, float acceleration, float deceleration)
+        public MovementSystem(PlayerData player, GameSessionData session, IMoveInputProvider input, float acceleration, float deceleration)
         {
             _player = player;
+            _session = session;
             _input = input;
             _acceleration = acceleration;
             _deceleration = deceleration;
@@ -30,7 +32,7 @@ namespace CheeseHeist.Systems
                 z /= mag;
             }
 
-            float effectiveSpeed = _player.MoveSpeed * _player.SpeedMultiplier;
+            float effectiveSpeed = _player.MoveSpeed * _player.SpeedMultiplier * _session.DifficultyMultiplier;
             var target = new Vector3Data(x * effectiveSpeed, 0f, z * effectiveSpeed);
 
             bool speedingUp = SqrMag(target) > SqrMag(_player.Velocity);
