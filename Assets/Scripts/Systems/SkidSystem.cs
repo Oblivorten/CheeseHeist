@@ -18,7 +18,7 @@ namespace CheeseHeist.Systems
             _speedMultiplier = speedMultiplier;
             _duration = duration;
 
-            events.OnTrailCollision += HandleTrailCollision;
+            events.OnPlayerCollision += HandleTrailCollision;
         }
 
         private void HandleTrailCollision()

@@ -10,10 +10,12 @@ namespace CheeseHeist.Adapters
             InputSource activeInputSource,
             MovementConfig movementConfig,
             TrailConfig trailConfig,
-            SkidConfig skidConfig)
+            SkidConfig skidConfig,
+            LivesConfig livesConfig)
         {
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
+            var session = new GameSessionData();
             var events = new GameEvents();
 
             var keyboard = new KeyboardInputAdapter(refs.InputActions);
@@ -41,12 +43,17 @@ namespace CheeseHeist.Adapters
             var skidSystem = new SkidSystem(
                 playerData, events, skidConfig.SpeedMultiplier, skidConfig.Duration);
 
+            refs.ObstacleCollision.Initialize(events);
+            var livesSystem = new LivesSystem(
+                session, events, livesConfig.StartingLives, livesConfig.InvulnerabilityDuration);
+
             loop.AddSystem(trailCollisionSystem);
             loop.AddSystem(skidSystem);
+            loop.AddSystem(livesSystem);
             loop.AddSystem(movementSystem);
             loop.AddSystem(trailSystem);
 
-            return new GameContext { Loop = loop, TrailSystem = trailSystem, Events = events };
+            return new GameContext { Loop = loop, TrailSystem = trailSystem, Events = events, Session = session };
         }
     }
 }

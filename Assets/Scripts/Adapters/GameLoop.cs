@@ -9,13 +9,17 @@ namespace CheeseHeist.Adapters
         [SerializeField] private MovementConfig _movementConfig;
         [SerializeField] private TrailConfig _trailConfig;
         [SerializeField] private SkidConfig _skidConfig;
+        [SerializeField] private LivesConfig _livesConfig;
 
         private GameContext _context;
 
         private void Awake()
         {
             var bootstrap = new Bootstrap();
-            _context = bootstrap.CreateGame(_refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig);
+            _context = bootstrap.CreateGame(_refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig, _livesConfig);
+
+            _context.Events.OnLivesChanged += lives => Debug.Log($"Lives: {lives}");
+            _context.Events.OnGameOver += () => Debug.Log("GAME OVER");
         }
 
         private void FixedUpdate()
