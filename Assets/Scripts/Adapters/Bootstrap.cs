@@ -9,10 +9,12 @@ namespace CheeseHeist.Adapters
             SceneReferences refs,
             InputSource activeInputSource,
             MovementConfig movementConfig,
-            TrailConfig trailConfig)
+            TrailConfig trailConfig,
+            SkidConfig skidConfig)
         {
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
+            var events = new GameEvents();
 
             var keyboard = new KeyboardInputAdapter(refs.InputActions);
             var inputRouter = new PlayerInputRouter();
@@ -29,14 +31,22 @@ namespace CheeseHeist.Adapters
             var movementSystem = new MovementSystem(
                 playerData, inputRouter, movementConfig.Acceleration, movementConfig.Deceleration);
             refs.PlayerBody.Initialize(playerData);
-            loop.AddSystem(movementSystem);
 
             var trailSystem = new TrailSystem(
-                playerData, trailConfig.SpawnDistance, trailConfig.Lifetime, trailConfig.Capacity);
+                playerData, trailConfig.SpawnDistance, trailConfig.Lifetime, trailConfig.Capacity, trailConfig.GroundHeight);
             refs.TrailView.Initialize(trailConfig.Capacity);
+
+            var trailCollisionSystem = new TrailCollisionSystem(
+                playerData, trailSystem, events, skidConfig.CollisionRadius, skidConfig.GraceSegments);
+            var skidSystem = new SkidSystem(
+                playerData, events, skidConfig.SpeedMultiplier, skidConfig.Duration);
+
+            loop.AddSystem(trailCollisionSystem);
+            loop.AddSystem(skidSystem);
+            loop.AddSystem(movementSystem);
             loop.AddSystem(trailSystem);
 
-            return new GameContext { Loop = loop, TrailSystem = trailSystem };
+            return new GameContext { Loop = loop, TrailSystem = trailSystem, Events = events };
         }
     }
 }

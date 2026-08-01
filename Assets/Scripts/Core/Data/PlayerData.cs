@@ -5,7 +5,6 @@ namespace CheeseHeist.Core
         public Vector3Data Position;
         public Vector3Data Velocity;
         public float MoveSpeed;
-
+        public float SpeedMultiplier = 1f;
     }
 }
-

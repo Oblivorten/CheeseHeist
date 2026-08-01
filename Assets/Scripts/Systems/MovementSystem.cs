@@ -30,7 +30,8 @@ namespace CheeseHeist.Systems
                 z /= mag;
             }
 
-            var target = new Vector3Data(x * _player.MoveSpeed, 0f, z * _player.MoveSpeed);
+            float effectiveSpeed = _player.MoveSpeed * _player.SpeedMultiplier;
+            var target = new Vector3Data(x * effectiveSpeed, 0f, z * effectiveSpeed);
 
             bool speedingUp = SqrMag(target) > SqrMag(_player.Velocity);
             float rate = speedingUp ? _acceleration : _deceleration;
@@ -46,10 +47,7 @@ namespace CheeseHeist.Systems
             float dz = target.Z - current.Z;
             float dist = System.MathF.Sqrt(dx * dx + dz * dz);
 
-            if (dist <= maxDelta || dist == 0f)
-            {
-                return target;
-            }
+            if (dist <= maxDelta || dist == 0f) return target;
 
             return new Vector3Data(current.X + dx / dist * maxDelta, 0f, current.Z + dz / dist * maxDelta);
         }

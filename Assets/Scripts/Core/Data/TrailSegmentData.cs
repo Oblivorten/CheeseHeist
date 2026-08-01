@@ -6,5 +6,6 @@ namespace CheeseHeist.Core
         public Vector3Data Position;
         public float Age;
         public bool IsActive;
+        public int SpawnSequence;
     }
 }

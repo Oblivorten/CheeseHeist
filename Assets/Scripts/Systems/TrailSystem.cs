@@ -9,18 +9,22 @@ namespace CheeseHeist.Systems
         private readonly TrailSegmentData[] _segments;
         private readonly float _spawnDistance;
         private readonly float _lifetime;
+        private readonly float _groundHeight;
 
         private Vector3Data _lastSpawnPosition;
         private int _writeIndex;
         private bool _hasSpawnedOnce;
+        private int _spawnCounter;
 
         public IReadOnlyList<TrailSegmentData> Segments => _segments;
+        public int SpawnCounter => _spawnCounter;
 
-        public TrailSystem(PlayerData player, float spawnDistance, float lifetime, int capacity)
+        public TrailSystem(PlayerData player, float spawnDistance, float lifetime, int capacity, float groundHeight)
         {
             _player = player;
             _spawnDistance = spawnDistance;
             _lifetime = lifetime;
+            _groundHeight = groundHeight;
 
             _segments = new TrailSegmentData[capacity];
             for (int i = 0; i < capacity; i++)
@@ -33,10 +37,7 @@ namespace CheeseHeist.Systems
         {
             for (int i = 0; i < _segments.Length; i++)
             {
-                if (!_segments[i].IsActive)
-                {
-                    continue;
-                }
+                if (!_segments[i].IsActive) continue;
 
                 _segments[i].Age += deltaTime;
                 if (_segments[i].Age >= _lifetime)
@@ -45,16 +46,18 @@ namespace CheeseHeist.Systems
                 }
             }
 
+            var groundedPosition = new Vector3Data(_player.Position.X, _groundHeight, _player.Position.Z);
+
             if (!_hasSpawnedOnce)
             {
-                SpawnAt(_player.Position);
+                SpawnAt(groundedPosition);
                 _hasSpawnedOnce = true;
                 return;
             }
 
-            if (Distance(_lastSpawnPosition, _player.Position) >= _spawnDistance)
+            if (Distance(_lastSpawnPosition, groundedPosition) >= _spawnDistance)
             {
-                SpawnAt(_player.Position);
+                SpawnAt(groundedPosition);
             }
         }
 
@@ -64,6 +67,7 @@ namespace CheeseHeist.Systems
             segment.Position = position;
             segment.Age = 0f;
             segment.IsActive = true;
+            segment.SpawnSequence = _spawnCounter++;
 
             _lastSpawnPosition = position;
             _writeIndex = (_writeIndex + 1) % _segments.Length;

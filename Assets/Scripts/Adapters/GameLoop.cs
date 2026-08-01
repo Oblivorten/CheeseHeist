@@ -8,13 +8,14 @@ namespace CheeseHeist.Adapters
         [SerializeField] private InputSource _activeInputSource = InputSource.Keyboard;
         [SerializeField] private MovementConfig _movementConfig;
         [SerializeField] private TrailConfig _trailConfig;
+        [SerializeField] private SkidConfig _skidConfig;
 
         private GameContext _context;
 
         private void Awake()
         {
             var bootstrap = new Bootstrap();
-            _context = bootstrap.CreateGame(_refs, _activeInputSource, _movementConfig, _trailConfig);
+            _context = bootstrap.CreateGame(_refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig);
         }
 
         private void FixedUpdate()

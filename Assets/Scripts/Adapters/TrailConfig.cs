@@ -6,5 +6,6 @@ namespace CheeseHeist.Adapters
         public float SpawnDistance = 0.4f;
         public float Lifetime = 7f;
         public int Capacity = 80;
+        public float GroundHeight = 0.05f;
     }
 }
