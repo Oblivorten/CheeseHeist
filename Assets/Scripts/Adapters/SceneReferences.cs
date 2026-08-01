@@ -13,5 +13,6 @@ namespace CheeseHeist.Adapters
         public GyroscopeInputAdapter Gyroscope;
         public TrailSegmentView TrailView;
         public CatBody CatBody;
+        public CheesePickup[] CheesePickups;
     }
 }

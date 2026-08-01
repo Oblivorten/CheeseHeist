@@ -12,7 +12,8 @@ namespace CheeseHeist.Adapters
             TrailConfig trailConfig,
             SkidConfig skidConfig,
             LivesConfig livesConfig,
-            CatConfig catConfig)
+            CatConfig catConfig,
+            CheeseConfig cheeseConfig)
         {
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
@@ -52,6 +53,12 @@ namespace CheeseHeist.Adapters
             var catAISystem = new CatAISystem(
                 playerData, catData, events,
                 catConfig.PatrolDistance, catConfig.LungeDistance, catConfig.LungeWindowDuration, catConfig.FollowSpeed);
+
+            foreach (var pickup in refs.CheesePickups)
+            {
+                pickup.Initialize(events, cheeseConfig.PointsPerCheese);
+            }
+            var scoreSystem = new ScoreSystem(session, events);
 
             loop.AddSystem(trailCollisionSystem);
             loop.AddSystem(skidSystem);

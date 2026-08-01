@@ -11,6 +11,7 @@ namespace CheeseHeist.Adapters
         [SerializeField] private SkidConfig _skidConfig;
         [SerializeField] private LivesConfig _livesConfig;
         [SerializeField] private CatConfig _catConfig;
+        [SerializeField] private CheeseConfig _cheeseConfig;
 
         private GameContext _context;
 
@@ -18,11 +19,12 @@ namespace CheeseHeist.Adapters
         {
             var bootstrap = new Bootstrap();
             _context = bootstrap.CreateGame(
-                _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig, _livesConfig, _catConfig);
+                _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig, _livesConfig, _catConfig, _cheeseConfig);
 
             _context.Events.OnLivesChanged += lives => Debug.Log($"Lives: {lives}");
             _context.Events.OnGameOver += () => Debug.Log("GAME OVER (lives)");
             _context.Events.OnCatCaught += () => Debug.Log("CAUGHT BY CAT");
+            _context.Events.OnScoreChanged += score => Debug.Log($"Score: {score}");
         }
 
         private void FixedUpdate()
