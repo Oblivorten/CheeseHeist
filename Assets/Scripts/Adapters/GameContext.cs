@@ -9,5 +9,6 @@ namespace CheeseHeist.Adapters
         public TrailSystem TrailSystem;
         public GameEvents Events;
         public GameSessionData Session;
+        public CatData Cat;
     }
 }

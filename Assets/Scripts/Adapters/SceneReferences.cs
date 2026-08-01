@@ -12,5 +12,6 @@ namespace CheeseHeist.Adapters
         public VirtualJoystickInputAdapter Joystick;
         public GyroscopeInputAdapter Gyroscope;
         public TrailSegmentView TrailView;
+        public CatBody CatBody;
     }
 }
