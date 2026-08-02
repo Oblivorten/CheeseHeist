@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace CheeseHeist.Adapters
 {
@@ -24,26 +23,8 @@ namespace CheeseHeist.Adapters
                 _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig,
                 _livesConfig, _catConfig, _cheeseConfig, _difficultyConfig);
 
-            _context.Events.OnLivesChanged += lives => Debug.Log($"Lives: {lives}");
-            _context.Events.OnScoreChanged += score => Debug.Log($"Score: {score}");
-            _context.Events.OnDifficultyChanged += m => Debug.Log($"Difficulty: {m:F2}x");
-            _context.Events.OnGameStateChanged += state => Debug.Log($"State: {state}");
-        }
-
-        private void Update()
-        {
-            // Временные дебаг-клавиши до модуля 12 (HUD с настоящими кнопками).
-            if (Keyboard.current == null) return;
-
-            if (Keyboard.current.pKey.wasPressedThisFrame)
-            {
-                _context.GameFlow.TogglePause();
-            }
-
-            if (Keyboard.current.rKey.wasPressedThisFrame)
-            {
-                _context.GameFlow.RequestRestart();
-            }
+            _refs.HUD.Initialize(_context.Events, _context.GameFlow, _context.Session);
+            _refs.ResultsScreen.Initialize(_context.Events, _context.GameFlow, _context.Session);
         }
 
         private void FixedUpdate()

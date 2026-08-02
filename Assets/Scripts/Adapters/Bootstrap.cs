@@ -85,6 +85,7 @@ namespace CheeseHeist.Adapters
                 TrailSystem = trailSystem,
                 Events = events,
                 Session = session,
+                Player = playerData,
                 Cat = catData,
                 GameFlow = gameFlowSystem
             };

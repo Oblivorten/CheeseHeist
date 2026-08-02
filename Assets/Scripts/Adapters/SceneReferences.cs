@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using CheeseHeist.UI;
 
 namespace CheeseHeist.Adapters
 {
@@ -14,5 +15,7 @@ namespace CheeseHeist.Adapters
         public TrailSegmentView TrailView;
         public CatBody CatBody;
         public CheesePickup[] CheesePickups;
+        public HUDController HUD;
+        public ResultsScreenController ResultsScreen;
     }
 }
