@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CheeseHeist.Core;
 using CheeseHeist.Systems;
 
@@ -14,7 +15,8 @@ namespace CheeseHeist.Adapters
             LivesConfig livesConfig,
             CatConfig catConfig,
             CheeseConfig cheeseConfig,
-            DifficultyConfig difficultyConfig)
+            DifficultyConfig difficultyConfig,
+            IReadOnlyList<CheesePickup> cheesePickups)
         {
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
@@ -59,9 +61,9 @@ namespace CheeseHeist.Adapters
                 playerData, catData, session, events,
                 catConfig.PatrolDistance, catConfig.LungeDistance, catConfig.LungeWindowDuration, catConfig.FollowSpeed);
 
-            if (refs.CheesePickups != null)
+            if (cheesePickups != null)
             {
-                foreach (var pickup in refs.CheesePickups)
+                foreach (var pickup in cheesePickups)
                 {
                     pickup.Initialize(events, cheeseConfig.PointsPerCheese);
                 }

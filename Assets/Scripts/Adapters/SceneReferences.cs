@@ -14,8 +14,8 @@ namespace CheeseHeist.Adapters
         public GyroscopeInputAdapter Gyroscope;
         public TrailSegmentView TrailView;
         public CatBody CatBody;
-        public CheesePickup[] CheesePickups;
         public HUDController HUD;
         public ResultsScreenController ResultsScreen;
+        public LevelSpawner LevelSpawner;
     }
 }
