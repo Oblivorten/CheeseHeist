@@ -3,7 +3,7 @@ using CheeseHeist.Core;
 
 namespace CheeseHeist.Systems
 {
-    public class TrailSystem : ITickable
+    public class TrailSystem : ITickable, IResettable
     {
         private readonly PlayerData _player;
         private readonly TrailSegmentData[] _segments;
@@ -78,6 +78,18 @@ namespace CheeseHeist.Systems
             float dx = a.X - b.X;
             float dz = a.Z - b.Z;
             return System.MathF.Sqrt(dx * dx + dz * dz);
+        }
+
+        public void ResetState()
+        {
+            for (int i = 0; i < _segments.Length; i++)
+            {
+                _segments[i].IsActive = false;
+                _segments[i].Age = 0f;
+            }
+            _writeIndex = 0;
+            _spawnCounter = 0;
+            _hasSpawnedOnce = false;
         }
     }
 }

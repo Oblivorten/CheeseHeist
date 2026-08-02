@@ -2,7 +2,7 @@ using CheeseHeist.Core;
 
 namespace CheeseHeist.Systems
 {
-    public class ScoreSystem
+    public class ScoreSystem : IResettable
     {
         private readonly GameSessionData _session;
         private readonly GameEvents _events;
@@ -18,6 +18,12 @@ namespace CheeseHeist.Systems
         {
             _session.Score += points;
             _events.RaiseScoreChanged(_session.Score);
+        }
+
+        public void ResetState()
+        {
+            _session.Score = 0;
+            _events.RaiseScoreChanged(0);
         }
     }
 }

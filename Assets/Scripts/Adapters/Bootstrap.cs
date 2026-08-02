@@ -21,6 +21,7 @@ namespace CheeseHeist.Adapters
             var session = new GameSessionData();
             var events = new GameEvents();
             var catData = new CatData { Position = new Vector3Data(0f, catConfig.SpawnHeight, 0f) };
+            var timeController = new UnityTimeController();
 
             var keyboard = new KeyboardInputAdapter(refs.InputActions);
             var inputRouter = new PlayerInputRouter();
@@ -39,7 +40,7 @@ namespace CheeseHeist.Adapters
 
             var movementSystem = new MovementSystem(
                 playerData, session, inputRouter, movementConfig.Acceleration, movementConfig.Deceleration);
-            refs.PlayerBody.Initialize(playerData);
+            refs.PlayerBody.Initialize(playerData, events);
 
             var trailSystem = new TrailSystem(
                 playerData, trailConfig.SpawnDistance, trailConfig.Lifetime, trailConfig.Capacity, trailConfig.GroundHeight);
@@ -74,8 +75,19 @@ namespace CheeseHeist.Adapters
             loop.AddSystem(movementSystem);
             loop.AddSystem(trailSystem);
             loop.AddSystem(catAISystem);
+            loop.AddResettable(scoreSystem);
 
-            return new GameContext { Loop = loop, TrailSystem = trailSystem, Events = events, Session = session, Cat = catData };
+            var gameFlowSystem = new GameFlowSystem(session, playerData, events, loop, timeController);
+
+            return new GameContext
+            {
+                Loop = loop,
+                TrailSystem = trailSystem,
+                Events = events,
+                Session = session,
+                Cat = catData,
+                GameFlow = gameFlowSystem
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CheeseHeist.Adapters
 {
@@ -20,13 +21,29 @@ namespace CheeseHeist.Adapters
         {
             var bootstrap = new Bootstrap();
             _context = bootstrap.CreateGame(
-                _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig, _livesConfig, _catConfig, _cheeseConfig, _difficultyConfig);
+                _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig,
+                _livesConfig, _catConfig, _cheeseConfig, _difficultyConfig);
 
             _context.Events.OnLivesChanged += lives => Debug.Log($"Lives: {lives}");
-            _context.Events.OnGameOver += () => Debug.Log("GAME OVER (lives)");
-            _context.Events.OnCatCaught += () => Debug.Log("CAUGHT BY CAT");
             _context.Events.OnScoreChanged += score => Debug.Log($"Score: {score}");
             _context.Events.OnDifficultyChanged += m => Debug.Log($"Difficulty: {m:F2}x");
+            _context.Events.OnGameStateChanged += state => Debug.Log($"State: {state}");
+        }
+
+        private void Update()
+        {
+            // Временные дебаг-клавиши до модуля 12 (HUD с настоящими кнопками).
+            if (Keyboard.current == null) return;
+
+            if (Keyboard.current.pKey.wasPressedThisFrame)
+            {
+                _context.GameFlow.TogglePause();
+            }
+
+            if (Keyboard.current.rKey.wasPressedThisFrame)
+            {
+                _context.GameFlow.RequestRestart();
+            }
         }
 
         private void FixedUpdate()

@@ -2,7 +2,7 @@ using CheeseHeist.Core;
 
 namespace CheeseHeist.Systems
 {
-    public class CatAISystem : ITickable
+    public class CatAISystem : ITickable, IResettable
     {
         private readonly PlayerData _player;
         private readonly CatData _cat;
@@ -100,6 +100,15 @@ namespace CheeseHeist.Systems
             if (dist <= maxDelta || dist == 0f) return target;
 
             return new Vector3Data(current.X + dx / dist * maxDelta, target.Y, current.Z + dz / dist * maxDelta);
+        }
+
+        public void ResetState()
+        {
+            _cat.State = CatState.Patrol;
+            _cat.StateTimer = 0f;
+            _cat.IsCaught = false;
+            _cat.Velocity = new Vector3Data(0f, 0f, 0f);
+            _initialized = false;
         }
     }
 }

@@ -10,5 +10,6 @@ namespace CheeseHeist.Adapters
         public GameEvents Events;
         public GameSessionData Session;
         public CatData Cat;
+        public GameFlowSystem GameFlow;
     }
 }

@@ -2,10 +2,11 @@ using CheeseHeist.Core;
 
 namespace CheeseHeist.Systems
 {
-    public class LivesSystem : ITickable
+    public class LivesSystem : ITickable, IResettable
     {
         private readonly GameSessionData _session;
         private readonly GameEvents _events;
+        private readonly int _startingLives;
         private readonly float _invulnerabilityDuration;
 
         private float _invulnerabilityTimer;
@@ -14,6 +15,7 @@ namespace CheeseHeist.Systems
         {
             _session = session;
             _events = events;
+            _startingLives = startingLives;
             _invulnerabilityDuration = invulnerabilityDuration;
 
             _session.Lives = startingLives;
@@ -23,7 +25,7 @@ namespace CheeseHeist.Systems
         private void HandleCollision()
         {
             if (_invulnerabilityTimer > 0f) return;
-            if (_session.Lives <= 0) return;        
+            if (_session.Lives <= 0) return;
 
             _session.Lives--;
             _invulnerabilityTimer = _invulnerabilityDuration;
@@ -41,6 +43,13 @@ namespace CheeseHeist.Systems
             {
                 _invulnerabilityTimer -= deltaTime;
             }
+        }
+
+        public void ResetState()
+        {
+            _session.Lives = _startingLives;
+            _invulnerabilityTimer = 0f;
+            _events.RaiseLivesChanged(_session.Lives);
         }
     }
 }

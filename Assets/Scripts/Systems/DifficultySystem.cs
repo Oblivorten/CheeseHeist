@@ -2,7 +2,7 @@ using CheeseHeist.Core;
 
 namespace CheeseHeist.Systems
 {
-    public class DifficultySystem : ITickable
+    public class DifficultySystem : ITickable, IResettable
     {
         private readonly GameSessionData _session;
         private readonly GameEvents _events;
@@ -34,6 +34,13 @@ namespace CheeseHeist.Systems
                 _session.DifficultyMultiplier = multiplier;
                 _events.RaiseDifficultyChanged(multiplier);
             }
+        }
+
+        public void ResetState()
+        {
+            _session.ElapsedTime = 0f;
+            _session.DifficultyMultiplier = 1f;
+            _events.RaiseDifficultyChanged(1f);
         }
     }
 }
