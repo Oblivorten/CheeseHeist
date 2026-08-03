@@ -43,6 +43,8 @@ namespace CheeseHeist.Adapters
         {
             _cheeseEntries.RemoveAll(e => e.go == null); 
 
+            if (_cheeseEntries.Count >= _cheeseConfig.MaxConcurrentCheese) return;
+
             _cheeseSpawnTimer += deltaTime;
             if (_cheeseSpawnTimer < _cheeseConfig.SpawnInterval) return;
 

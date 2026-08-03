@@ -5,5 +5,6 @@ namespace CheeseHeist.Adapters
     {
         public int PointsPerCheese = 10;
         public float SpawnInterval = 5f;
+        public int MaxConcurrentCheese = 6;
     }
 }

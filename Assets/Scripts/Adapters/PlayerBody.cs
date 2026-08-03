@@ -14,6 +14,8 @@ namespace CheeseHeist.Adapters
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
+            _spawnPosition = _rigidbody.position;
+            _spawnRotation = _rigidbody.rotation;
         }
 
         public void Initialize(PlayerData playerData, GameEvents events)
