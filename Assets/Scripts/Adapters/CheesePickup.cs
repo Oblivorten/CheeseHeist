@@ -20,12 +20,12 @@ namespace CheeseHeist.Adapters
 
         private void OnTriggerEnter(Collider other)
         {
-            if (_collected) return;             
+            if (_collected) return;
             if (!other.CompareTag(_playerTag)) return;
 
             _collected = true;
             _events.RaiseCheeseCollected(_points);
-            gameObject.SetActive(false);
+            Destroy(gameObject);
         }
     }
 }

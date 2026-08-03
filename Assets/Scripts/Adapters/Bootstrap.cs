@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using CheeseHeist.Core;
 using CheeseHeist.Systems;
 
@@ -7,6 +6,7 @@ namespace CheeseHeist.Adapters
     public class Bootstrap
     {
         public GameContext CreateGame(
+            GameEvents events,
             SceneReferences refs,
             InputSource activeInputSource,
             MovementConfig movementConfig,
@@ -14,14 +14,11 @@ namespace CheeseHeist.Adapters
             SkidConfig skidConfig,
             LivesConfig livesConfig,
             CatConfig catConfig,
-            CheeseConfig cheeseConfig,
-            DifficultyConfig difficultyConfig,
-            IReadOnlyList<CheesePickup> cheesePickups)
+            DifficultyConfig difficultyConfig)
         {
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
             var session = new GameSessionData();
-            var events = new GameEvents();
             var catData = new CatData { Position = new Vector3Data(0f, catConfig.SpawnHeight, 0f) };
             var timeController = new UnityTimeController();
 
@@ -61,13 +58,6 @@ namespace CheeseHeist.Adapters
                 playerData, catData, session, events,
                 catConfig.PatrolDistance, catConfig.LungeDistance, catConfig.LungeWindowDuration, catConfig.FollowSpeed);
 
-            if (cheesePickups != null)
-            {
-                foreach (var pickup in cheesePickups)
-                {
-                    pickup.Initialize(events, cheeseConfig.PointsPerCheese);
-                }
-            }
             var scoreSystem = new ScoreSystem(session, events);
 
             loop.AddSystem(difficultySystem);

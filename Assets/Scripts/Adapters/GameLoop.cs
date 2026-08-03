@@ -1,4 +1,5 @@
 using UnityEngine;
+using CheeseHeist.Core;
 
 namespace CheeseHeist.Adapters
 {
@@ -19,12 +20,15 @@ namespace CheeseHeist.Adapters
 
         private void Awake()
         {
-            var spawnedCheese = _refs.LevelSpawner.SpawnLevel(_levelSpawnConfig, _refs.PlayerBody.transform.position);
+            var events = new GameEvents();
+
+            _refs.LevelSpawner.Initialize(events, _levelSpawnConfig, _cheeseConfig, _refs.PlayerBody.transform);
+            _refs.LevelSpawner.SpawnInitialLevel();
 
             var bootstrap = new Bootstrap();
             _context = bootstrap.CreateGame(
-                _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig,
-                _livesConfig, _catConfig, _cheeseConfig, _difficultyConfig, spawnedCheese);
+                events, _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig,
+                _livesConfig, _catConfig, _difficultyConfig);
 
             _refs.HUD.Initialize(_context.Events, _context.GameFlow, _context.Session);
             _refs.ResultsScreen.Initialize(_context.Events, _context.GameFlow, _context.Session);
@@ -39,6 +43,7 @@ namespace CheeseHeist.Adapters
             _refs.PlayerBody.ApplyVelocity();
             _refs.TrailView.Sync(_context.TrailSystem.Segments);
             _refs.CatBody.Sync(_context.Cat);
+            _refs.LevelSpawner.TickCheeseSpawner(dt);
         }
     }
 }

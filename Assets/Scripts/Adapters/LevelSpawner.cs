@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using CheeseHeist.Core;
 
 namespace CheeseHeist.Adapters
 {
@@ -7,64 +8,109 @@ namespace CheeseHeist.Adapters
     {
         [SerializeField] private Transform _spawnContainer;
 
-        private readonly List<Vector3> _occupiedPositions = new();
+        private LevelSpawnConfig _config;
+        private CheeseConfig _cheeseConfig;
+        private GameEvents _events;
+        private Transform _playerTransform;
 
-        public List<CheesePickup> SpawnLevel(LevelSpawnConfig config, Vector3 playerSpawnPoint)
+        private readonly List<Vector3> _obstaclePositions = new();
+        private readonly List<GameObject> _spawnedObstacles = new();
+        private readonly List<(GameObject go, Vector3 pos)> _cheeseEntries = new();
+
+        private float _cheeseSpawnTimer;
+
+        public void Initialize(GameEvents events, LevelSpawnConfig config, CheeseConfig cheeseConfig, Transform playerTransform)
         {
-            _occupiedPositions.Clear();
-            _occupiedPositions.Add(playerSpawnPoint);
+            _events = events;
+            _config = config;
+            _cheeseConfig = cheeseConfig;
+            _playerTransform = playerTransform;
 
-            SpawnObstacles(config, playerSpawnPoint);
-            return SpawnCheese(config, playerSpawnPoint);
+            events.OnRestartRequested += HandleRestart;
         }
 
-        private void SpawnObstacles(LevelSpawnConfig config, Vector3 playerSpawnPoint)
+        public void SpawnInitialLevel()
         {
-            if (config.ObstaclePrefabs == null || config.ObstaclePrefabs.Length == 0) return;
-
-            for (int i = 0; i < config.ObstacleCount; i++)
+            SpawnObstacles();
+            for (int i = 0; i < _config.CheeseCount; i++)
             {
-                if (!TryFindPosition(config, playerSpawnPoint, out Vector3 position)) continue;
+                SpawnOneCheese();
+            }
+            _cheeseSpawnTimer = 0f;
+        }
 
-                var prefab = config.ObstaclePrefabs[Random.Range(0, config.ObstaclePrefabs.Length)];
+        public void TickCheeseSpawner(float deltaTime)
+        {
+            _cheeseEntries.RemoveAll(e => e.go == null); 
+
+            _cheeseSpawnTimer += deltaTime;
+            if (_cheeseSpawnTimer < _cheeseConfig.SpawnInterval) return;
+
+            _cheeseSpawnTimer = 0f;
+            SpawnOneCheese();
+        }
+
+        private void HandleRestart()
+        {
+            foreach (var obstacle in _spawnedObstacles)
+            {
+                if (obstacle != null) Destroy(obstacle);
+            }
+            _spawnedObstacles.Clear();
+            _obstaclePositions.Clear();
+
+            foreach (var (go, _) in _cheeseEntries)
+            {
+                if (go != null) Destroy(go);
+            }
+            _cheeseEntries.Clear();
+
+            SpawnInitialLevel(); 
+        }
+
+        private void SpawnObstacles()
+        {
+            if (_config.ObstaclePrefabs == null || _config.ObstaclePrefabs.Length == 0) return;
+
+            for (int i = 0; i < _config.ObstacleCount; i++)
+            {
+                if (!TryFindPosition(out Vector3 position)) continue;
+
+                var prefab = _config.ObstaclePrefabs[Random.Range(0, _config.ObstaclePrefabs.Length)];
                 var rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-                Instantiate(prefab, position, rotation, _spawnContainer);
+                var instance = Instantiate(prefab, position, rotation, _spawnContainer);
 
-                _occupiedPositions.Add(position);
+                _spawnedObstacles.Add(instance);
+                _obstaclePositions.Add(position);
             }
         }
 
-        private List<CheesePickup> SpawnCheese(LevelSpawnConfig config, Vector3 playerSpawnPoint)
+        private void SpawnOneCheese()
         {
-            var spawned = new List<CheesePickup>();
-            if (config.CheesePrefab == null) return spawned;
+            if (_config.CheesePrefab == null) return;
+            if (!TryFindPosition(out Vector3 position)) return;
 
-            for (int i = 0; i < config.CheeseCount; i++)
+            var instance = Instantiate(_config.CheesePrefab, position, Quaternion.identity, _spawnContainer);
+            _cheeseEntries.Add((instance, position));
+
+            if (instance.TryGetComponent(out CheesePickup pickup))
             {
-                if (!TryFindPosition(config, playerSpawnPoint, out Vector3 position)) continue;
-
-                var instance = Instantiate(config.CheesePrefab, position, Quaternion.identity, _spawnContainer);
-                _occupiedPositions.Add(position);
-
-                if (instance.TryGetComponent(out CheesePickup pickup))
-                {
-                    spawned.Add(pickup);
-                }
+                pickup.Initialize(_events, _cheeseConfig.PointsPerCheese);
             }
-
-            return spawned;
         }
 
-        private bool TryFindPosition(LevelSpawnConfig config, Vector3 playerSpawnPoint, out Vector3 position)
+        private bool TryFindPosition(out Vector3 position)
         {
-            for (int attempt = 0; attempt < config.MaxPlacementAttempts; attempt++)
+            Vector3 playerPos = _playerTransform != null ? _playerTransform.position : Vector3.zero;
+
+            for (int attempt = 0; attempt < _config.MaxPlacementAttempts; attempt++)
             {
-                float x = Random.Range(-config.ArenaHalfExtents.x, config.ArenaHalfExtents.x);
-                float z = Random.Range(-config.ArenaHalfExtents.y, config.ArenaHalfExtents.y);
+                float x = Random.Range(-_config.ArenaHalfExtents.x, _config.ArenaHalfExtents.x);
+                float z = Random.Range(-_config.ArenaHalfExtents.y, _config.ArenaHalfExtents.y);
                 var candidate = new Vector3(x, 0f, z);
 
-                if (Vector3.Distance(candidate, playerSpawnPoint) < config.SafeZoneRadius) continue;
-                if (IsTooCloseToOccupied(candidate, config.MinSpacing)) continue;
+                if (Vector3.Distance(candidate, playerPos) < _config.SafeZoneRadius) continue;
+                if (IsTooClose(candidate)) continue;
 
                 position = candidate;
                 return true;
@@ -74,11 +120,15 @@ namespace CheeseHeist.Adapters
             return false;
         }
 
-        private bool IsTooCloseToOccupied(Vector3 candidate, float minSpacing)
+        private bool IsTooClose(Vector3 candidate)
         {
-            foreach (var occupied in _occupiedPositions)
+            foreach (var pos in _obstaclePositions)
             {
-                if (Vector3.Distance(candidate, occupied) < minSpacing) return true;
+                if (Vector3.Distance(candidate, pos) < _config.MinSpacing) return true;
+            }
+            foreach (var (_, pos) in _cheeseEntries)
+            {
+                if (Vector3.Distance(candidate, pos) < _config.MinSpacing) return true;
             }
             return false;
         }

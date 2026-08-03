@@ -4,5 +4,6 @@ namespace CheeseHeist.Adapters
     public class CheeseConfig
     {
         public int PointsPerCheese = 10;
+        public float SpawnInterval = 5f;
     }
 }
