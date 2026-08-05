@@ -6,6 +6,8 @@ namespace CheeseHeist.Adapters
     [RequireComponent(typeof(Rigidbody))]
     public class PlayerBody : MonoBehaviour
     {
+        [SerializeField] private float _rotationSpeedDegrees = 720f;
+
         private PlayerData _playerData;
         private Rigidbody _rigidbody;
         private Vector3 _spawnPosition;
@@ -34,6 +36,14 @@ namespace CheeseHeist.Adapters
         {
             var v = _playerData.Velocity;
             _rigidbody.linearVelocity = new Vector3(v.X, v.Y, v.Z);
+
+            var horizontalVelocity = new Vector3(v.X, 0f, v.Z);
+            if (horizontalVelocity.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(horizontalVelocity.normalized, Vector3.up);
+                _rigidbody.MoveRotation(
+                    Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, _rotationSpeedDegrees * Time.fixedDeltaTime));
+            }
         }
 
         private void HandleRestart()

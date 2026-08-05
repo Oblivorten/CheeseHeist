@@ -623,6 +623,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -748,6 +749,24 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c4a92231dd600747935dbb562af9a7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _target: {fileID: 1886432850}
+  _distanceBehind: 8
+  _height: 3.5
+  _lookAheadHeight: 1
+  _followSmoothTime: 0.15
+  _rotationSmoothSpeed: 6
 --- !u!1 &354748816
 GameObject:
   m_ObjectHideFlags: 0
@@ -2441,7 +2460,7 @@ MonoBehaviour:
     HUD: {fileID: 80440256}
     ResultsScreen: {fileID: 1509739010}
     LevelSpawner: {fileID: 1076751186}
-  _activeInputSource: 0
+  _activeInputSource: 1
   _movementConfig:
     Acceleration: 20
     Deceleration: 25
@@ -3061,6 +3080,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 282634030}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1886432850 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 346274302429613604, guid: e0f6f08778374c0469d4b142aa1406eb, type: 3}
+  m_PrefabInstance: {fileID: 5609748768933352485}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1897389244
 GameObject:
   m_ObjectHideFlags: 0
