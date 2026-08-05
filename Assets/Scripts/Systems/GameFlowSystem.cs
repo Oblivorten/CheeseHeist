@@ -18,11 +18,21 @@ namespace CheeseHeist.Systems
             _loop = loop;
             _timeController = timeController;
 
-            _session.State = GameState.Playing;
-            _timeController.SetTimeScale(1f);
+            _session.State = GameState.MainMenu;
+            _timeController.SetTimeScale(0f);
 
             events.OnGameOver += HandleDeath;
             events.OnCatCaught += HandleDeath;
+            events.OnIdleTimeout += HandleDeath;
+        }
+
+        public void StartGame()
+        {
+            if (_session.State != GameState.MainMenu) return;
+
+            _session.State = GameState.Playing;
+            _timeController.SetTimeScale(1f);
+            _events.RaiseGameStateChanged(GameState.Playing);
         }
 
         private void HandleDeath()

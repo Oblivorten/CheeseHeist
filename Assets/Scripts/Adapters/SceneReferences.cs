@@ -17,6 +17,7 @@ namespace CheeseHeist.Adapters
         public CatBody CatBody;
         public HUDController HUD;
         public ResultsScreenController ResultsScreen;
+        public MainMenuController MainMenu;
         public LevelSpawner LevelSpawner;
         public ChaseCameraSystem Camera;
     }

@@ -14,14 +14,15 @@ namespace CheeseHeist.Adapters
             SkidConfig skidConfig,
             LivesConfig livesConfig,
             CatConfig catConfig,
-            DifficultyConfig difficultyConfig)
+            DifficultyConfig difficultyConfig,
+            IdleConfig idleConfig)
         {
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
             var session = new GameSessionData();
             var catData = new CatData { Position = new Vector3Data(0f, catConfig.SpawnHeight, 0f) };
-            var timeController = new UnityTimeController();
             var cameraData = new CameraData();
+            var timeController = new UnityTimeController();
 
             var keyboard = new KeyboardInputAdapter(refs.InputActions);
             var inputRouter = new PlayerInputRouter();
@@ -41,7 +42,11 @@ namespace CheeseHeist.Adapters
             var movementSystem = new MovementSystem(
                 playerData, session, cameraData, inputRouter, movementConfig.Acceleration, movementConfig.Deceleration);
             refs.PlayerBody.Initialize(playerData, events);
-            refs.Camera.Initialize(cameraData);
+
+            if (refs.Camera != null)
+            {
+                refs.Camera.Initialize(cameraData);
+            }
 
             var trailSystem = new TrailSystem(
                 playerData, trailConfig.SpawnDistance, trailConfig.Lifetime, trailConfig.Capacity, trailConfig.GroundHeight);
@@ -62,6 +67,9 @@ namespace CheeseHeist.Adapters
 
             var scoreSystem = new ScoreSystem(session, events);
 
+            var idleTimeoutSystem = new IdleTimeoutSystem(
+                playerData, events, idleConfig.IdleThreshold, idleConfig.MovementEpsilon);
+
             loop.AddSystem(difficultySystem);
             loop.AddSystem(trailCollisionSystem);
             loop.AddSystem(skidSystem);
@@ -69,6 +77,7 @@ namespace CheeseHeist.Adapters
             loop.AddSystem(movementSystem);
             loop.AddSystem(trailSystem);
             loop.AddSystem(catAISystem);
+            loop.AddSystem(idleTimeoutSystem);
             loop.AddResettable(scoreSystem);
 
             var gameFlowSystem = new GameFlowSystem(session, playerData, events, loop, timeController);
