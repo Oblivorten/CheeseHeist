@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using CheeseHeist.UI;
+using CheeseHeist.CameraSystem;
 
 namespace CheeseHeist.Adapters
 {
@@ -17,5 +18,6 @@ namespace CheeseHeist.Adapters
         public HUDController HUD;
         public ResultsScreenController ResultsScreen;
         public LevelSpawner LevelSpawner;
+        public ChaseCameraSystem Camera;
     }
 }

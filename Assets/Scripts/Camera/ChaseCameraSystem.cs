@@ -1,4 +1,5 @@
 using UnityEngine;
+using CheeseHeist.Core;
 
 namespace CheeseHeist.CameraSystem
 {
@@ -12,6 +13,12 @@ namespace CheeseHeist.CameraSystem
         [SerializeField] private float _rotationSmoothSpeed = 6f;
 
         private Vector3 _velocity;
+        private CameraData _cameraData;
+
+        public void Initialize(CameraData cameraData)
+        {
+            _cameraData = cameraData;
+        }
 
         private void LateUpdate()
         {
@@ -26,6 +33,26 @@ namespace CheeseHeist.CameraSystem
             Vector3 lookTarget = _target.position + Vector3.up * _lookAheadHeight;
             Quaternion desiredRotation = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, Time.deltaTime * _rotationSmoothSpeed);
+
+            WriteCameraData();
+        }
+
+        private void WriteCameraData()
+        {
+            if (_cameraData == null) return;
+
+            Vector3 flatForward = transform.forward;
+            flatForward.y = 0f;
+            if (flatForward.sqrMagnitude < 0.0001f) flatForward = Vector3.forward;
+            flatForward.Normalize();
+
+            Vector3 flatRight = transform.right;
+            flatRight.y = 0f;
+            if (flatRight.sqrMagnitude < 0.0001f) flatRight = Vector3.right;
+            flatRight.Normalize();
+
+            _cameraData.Forward = new Vector3Data(flatForward.x, 0f, flatForward.z);
+            _cameraData.Right = new Vector3Data(flatRight.x, 0f, flatRight.z);
         }
     }
 }

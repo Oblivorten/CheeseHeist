@@ -6,14 +6,17 @@ namespace CheeseHeist.Systems
     {
         private readonly PlayerData _player;
         private readonly GameSessionData _session;
+        private readonly CameraData _camera;
         private readonly IMoveInputProvider _input;
         private readonly float _acceleration;
         private readonly float _deceleration;
 
-        public MovementSystem(PlayerData player, GameSessionData session, IMoveInputProvider input, float acceleration, float deceleration)
+        public MovementSystem(PlayerData player, GameSessionData session, CameraData camera,
+            IMoveInputProvider input, float acceleration, float deceleration)
         {
             _player = player;
             _session = session;
+            _camera = camera;
             _input = input;
             _acceleration = acceleration;
             _deceleration = deceleration;
@@ -32,8 +35,11 @@ namespace CheeseHeist.Systems
                 z /= mag;
             }
 
+            float dirX = _camera.Right.X * x + _camera.Forward.X * z;
+            float dirZ = _camera.Right.Z * x + _camera.Forward.Z * z;
+
             float effectiveSpeed = _player.MoveSpeed * _player.SpeedMultiplier * _session.DifficultyMultiplier;
-            var target = new Vector3Data(x * effectiveSpeed, 0f, z * effectiveSpeed);
+            var target = new Vector3Data(dirX * effectiveSpeed, 0f, dirZ * effectiveSpeed);
 
             bool speedingUp = SqrMag(target) > SqrMag(_player.Velocity);
             float rate = speedingUp ? _acceleration : _deceleration;
