@@ -4,7 +4,7 @@ using CheeseHeist.Core;
 
 namespace CheeseHeist.Adapters
 {
-    public class LevelSpawner : MonoBehaviour
+    public class LevelSpawner : MonoBehaviour, IResettable
     {
         [SerializeField] private Transform _spawnContainer;
 
@@ -25,8 +25,6 @@ namespace CheeseHeist.Adapters
             _config = config;
             _cheeseConfig = cheeseConfig;
             _playerTransform = playerTransform;
-
-            events.OnRestartRequested += HandleRestart;
         }
 
         public void SpawnInitialLevel()
@@ -52,7 +50,7 @@ namespace CheeseHeist.Adapters
             SpawnOneCheese();
         }
 
-        private void HandleRestart()
+        public void ResetState() 
         {
             foreach (var obstacle in _spawnedObstacles)
             {
@@ -67,7 +65,7 @@ namespace CheeseHeist.Adapters
             }
             _cheeseEntries.Clear();
 
-            SpawnInitialLevel(); 
+            SpawnInitialLevel();
         }
 
         private void SpawnObstacles()

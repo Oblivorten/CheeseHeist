@@ -3,10 +3,13 @@ namespace CheeseHeist.Adapters
     [System.Serializable]
     public class CatConfig
     {
-        public float PatrolDistance = 4f;
-        public float LungeDistance = 1.5f;
-        public float LungeWindowDuration = 5f;
-        public float FollowSpeed = 8f;
         public float SpawnHeight = 0.5f;
+        public float InitialOffsetDistance = 4f;
+        public float BaseSpeed = 4f;
+        public float LungeSpeedMultiplier = 1.8f;
+        public float LungeWindowDuration = 5f;
+        public float CatchRadius = 0.8f;
+        public float VelocityTurnRateDegrees = 100f;
+        public float FacingTurnRateDegrees = 600f;   
     }
 }

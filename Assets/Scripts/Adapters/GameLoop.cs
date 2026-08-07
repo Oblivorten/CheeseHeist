@@ -10,6 +10,7 @@ namespace CheeseHeist.Adapters
         [SerializeField] private MovementConfig _movementConfig;
         [SerializeField] private TrailConfig _trailConfig;
         [SerializeField] private SkidConfig _skidConfig;
+        [SerializeField] private SlowdownConfig _slowdownConfig;
         [SerializeField] private LivesConfig _livesConfig;
         [SerializeField] private CatConfig _catConfig;
         [SerializeField] private CheeseConfig _cheeseConfig;
@@ -28,10 +29,10 @@ namespace CheeseHeist.Adapters
 
             var bootstrap = new Bootstrap();
             _context = bootstrap.CreateGame(
-                events, _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig,
+                events, _refs, _activeInputSource, _movementConfig, _trailConfig, _skidConfig, _slowdownConfig,
                 _livesConfig, _catConfig, _difficultyConfig, _idleConfig);
 
-            _refs.HUD.Initialize(_context.Events, _context.GameFlow, _context.Session);
+            _refs.HUD.Initialize(_context.Events, _context.GameFlow, _context.Session, _context.Player, _context.Cat);
             _refs.ResultsScreen.Initialize(_context.Events, _context.GameFlow, _context.Session);
             _refs.MainMenu.Initialize(_context.Events, _context.GameFlow);
         }

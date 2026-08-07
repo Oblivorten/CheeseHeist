@@ -4,29 +4,39 @@ namespace CheeseHeist.Systems
 {
     public class CatAISystem : ITickable, IResettable
     {
+        private const float DegToRad = System.MathF.PI / 180f;
+
         private readonly PlayerData _player;
         private readonly CatData _cat;
         private readonly GameSessionData _session;
         private readonly GameEvents _events;
-        private readonly float _patrolDistance;
-        private readonly float _lungeDistance;
+        private readonly Vector3Data _spawnPosition;
+        private readonly float _baseSpeed;
+        private readonly float _lungeSpeedMultiplier;
         private readonly float _lungeWindowDuration;
-        private readonly float _followSpeed;
+        private readonly float _catchRadius;
+        private readonly float _velocityTurnRateDegrees;
+        private readonly float _facingTurnRateDegrees;
 
-        private Vector3Data _lastPlayerFacing = new Vector3Data(0f, 0f, 1f);
-        private bool _initialized;
+        private float _velocityAngle;
+        private float _facingAngle;
+        private bool _hasDirection;
 
         public CatAISystem(PlayerData player, CatData cat, GameSessionData session, GameEvents events,
-            float patrolDistance, float lungeDistance, float lungeWindowDuration, float followSpeed)
+            Vector3Data spawnPosition, float baseSpeed, float lungeSpeedMultiplier, float lungeWindowDuration,
+            float catchRadius, float velocityTurnRateDegrees, float facingTurnRateDegrees)
         {
             _player = player;
             _cat = cat;
             _session = session;
             _events = events;
-            _patrolDistance = patrolDistance;
-            _lungeDistance = lungeDistance;
+            _spawnPosition = spawnPosition;
+            _baseSpeed = baseSpeed;
+            _lungeSpeedMultiplier = lungeSpeedMultiplier;
             _lungeWindowDuration = lungeWindowDuration;
-            _followSpeed = followSpeed;
+            _catchRadius = catchRadius;
+            _velocityTurnRateDegrees = velocityTurnRateDegrees;
+            _facingTurnRateDegrees = facingTurnRateDegrees;
 
             events.OnPlayerCollision += HandleCollision;
         }
@@ -34,13 +44,6 @@ namespace CheeseHeist.Systems
         private void HandleCollision()
         {
             if (_cat.IsCaught) return;
-
-            if (_cat.State == CatState.Lunge)
-            {
-                _cat.IsCaught = true;
-                _events.RaiseCatCaught();
-                return;
-            }
 
             _cat.State = CatState.Lunge;
             _cat.StateTimer = _lungeWindowDuration;
@@ -59,56 +62,79 @@ namespace CheeseHeist.Systems
                 }
             }
 
-            var playerVelocity = _player.Velocity;
-            float velSq = playerVelocity.X * playerVelocity.X + playerVelocity.Z * playerVelocity.Z;
-            if (velSq > 0.01f)
+            float speedMultiplier = _cat.State == CatState.Lunge ? _lungeSpeedMultiplier : 1f;
+            float speed = _baseSpeed * speedMultiplier * _session.DifficultyMultiplier;
+
+            float toPlayerX = _player.Position.X - _cat.Position.X;
+            float toPlayerZ = _player.Position.Z - _cat.Position.Z;
+            float distToPlayer = System.MathF.Sqrt(toPlayerX * toPlayerX + toPlayerZ * toPlayerZ);
+
+            if (distToPlayer > 0.01f)
             {
-                float mag = System.MathF.Sqrt(velSq);
-                _lastPlayerFacing = new Vector3Data(playerVelocity.X / mag, 0f, playerVelocity.Z / mag);
+                float desiredAngle = System.MathF.Atan2(toPlayerX, toPlayerZ);
+
+                if (!_hasDirection)
+                {
+                    _velocityAngle = desiredAngle;
+                    _facingAngle = desiredAngle;
+                    _hasDirection = true;
+                }
+                else
+                {
+                    _facingAngle = RotateAngleTowards(_facingAngle, desiredAngle, _facingTurnRateDegrees * DegToRad * deltaTime);
+                    _velocityAngle = RotateAngleTowards(_velocityAngle, desiredAngle, _velocityTurnRateDegrees * DegToRad * deltaTime);
+                }
             }
 
-            float targetDistance = _cat.State == CatState.Lunge ? _lungeDistance : _patrolDistance;
-            var desired = new Vector3Data(
-                _player.Position.X - _lastPlayerFacing.X * targetDistance,
-                _player.Position.Y,
-                _player.Position.Z - _lastPlayerFacing.Z * targetDistance);
-
-            if (!_initialized)
-            {
-                _cat.Position = desired;
-                _initialized = true;
-                return;
-            }
-
-            float effectiveFollowSpeed = _followSpeed * _session.DifficultyMultiplier;
+            float dirX = System.MathF.Sin(_velocityAngle);
+            float dirZ = System.MathF.Cos(_velocityAngle);
 
             var previous = _cat.Position;
-            _cat.Position = MoveTowards(_cat.Position, desired, effectiveFollowSpeed * deltaTime);
+            _cat.Position = new Vector3Data(
+                previous.X + dirX * speed * deltaTime, previous.Y, previous.Z + dirZ * speed * deltaTime);
 
-            _cat.Velocity = new Vector3Data(
-                (_cat.Position.X - previous.X) / deltaTime,
-                0f,
-                (_cat.Position.Z - previous.Z) / deltaTime);
-        }
+            _cat.Velocity = new Vector3Data(dirX * speed, 0f, dirZ * speed);
+            _cat.FacingDirection = new Vector3Data(System.MathF.Sin(_facingAngle), 0f, System.MathF.Cos(_facingAngle));
 
-        private static Vector3Data MoveTowards(Vector3Data current, Vector3Data target, float maxDelta)
-        {
-            float dx = target.X - current.X;
-            float dz = target.Z - current.Z;
-            float dist = System.MathF.Sqrt(dx * dx + dz * dz);
-
-            if (dist <= maxDelta || dist == 0f) return target;
-
-            return new Vector3Data(current.X + dx / dist * maxDelta, target.Y, current.Z + dz / dist * maxDelta);
+            float catchDistSq = DistanceSq(_cat.Position, _player.Position);
+            if (catchDistSq <= _catchRadius * _catchRadius)
+            {
+                _cat.IsCaught = true;
+                _events.RaiseCatCaught();
+            }
         }
 
         public void ResetState()
         {
+            _cat.Position = _spawnPosition;
+            _cat.Velocity = new Vector3Data(0f, 0f, 0f);
+            _cat.FacingDirection = new Vector3Data(0f, 0f, 1f);
             _cat.State = CatState.Patrol;
             _cat.StateTimer = 0f;
             _cat.IsCaught = false;
-            _cat.Velocity = new Vector3Data(0f, 0f, 0f);
-            _initialized = false;
+            _hasDirection = false;
+        }
+
+        private static float RotateAngleTowards(float current, float target, float maxDelta)
+        {
+            float diff = NormalizeAngle(target - current);
+            if (diff > maxDelta) diff = maxDelta;
+            else if (diff < -maxDelta) diff = -maxDelta;
+            return current + diff;
+        }
+
+        private static float NormalizeAngle(float angle)
+        {
+            while (angle > System.MathF.PI) angle -= 2f * System.MathF.PI;
+            while (angle < -System.MathF.PI) angle += 2f * System.MathF.PI;
+            return angle;
+        }
+
+        private static float DistanceSq(Vector3Data a, Vector3Data b)
+        {
+            float dx = a.X - b.X;
+            float dz = a.Z - b.Z;
+            return dx * dx + dz * dz;
         }
     }
 }

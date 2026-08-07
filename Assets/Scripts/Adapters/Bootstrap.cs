@@ -12,6 +12,7 @@ namespace CheeseHeist.Adapters
             MovementConfig movementConfig,
             TrailConfig trailConfig,
             SkidConfig skidConfig,
+            SlowdownConfig slowdownConfig,
             LivesConfig livesConfig,
             CatConfig catConfig,
             DifficultyConfig difficultyConfig,
@@ -20,9 +21,13 @@ namespace CheeseHeist.Adapters
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = 5f };
             var session = new GameSessionData();
-            var catData = new CatData { Position = new Vector3Data(0f, catConfig.SpawnHeight, 0f) };
             var cameraData = new CameraData();
             var timeController = new UnityTimeController();
+
+            var playerTransform = refs.PlayerBody.transform;
+            var catSpawnWorld = playerTransform.position - playerTransform.forward * catConfig.InitialOffsetDistance;
+            var catSpawnPosition = new Vector3Data(catSpawnWorld.x, catConfig.SpawnHeight, catSpawnWorld.z);
+            var catData = new CatData { Position = catSpawnPosition };
 
             var keyboard = new KeyboardInputAdapter(refs.InputActions);
             var inputRouter = new PlayerInputRouter();
@@ -40,8 +45,10 @@ namespace CheeseHeist.Adapters
                 session, events, difficultyConfig.RampDuration, difficultyConfig.MaxMultiplier);
 
             var movementSystem = new MovementSystem(
-                playerData, session, cameraData, inputRouter, movementConfig.Acceleration, movementConfig.Deceleration);
-            refs.PlayerBody.Initialize(playerData, events);
+                 playerData, session, cameraData, inputRouter,
+                 movementConfig.Acceleration, movementConfig.Deceleration,
+                 movementConfig.VelocityTurnRateDegrees, movementConfig.FacingTurnRateDegrees);
+            refs.PlayerBody.Initialize(playerData);
 
             if (refs.Camera != null)
             {
@@ -55,15 +62,18 @@ namespace CheeseHeist.Adapters
             var trailCollisionSystem = new TrailCollisionSystem(
                 playerData, trailSystem, events, skidConfig.CollisionRadius, skidConfig.GraceSegments);
             var skidSystem = new SkidSystem(
-                playerData, events, skidConfig.SpeedMultiplier, skidConfig.Duration);
+                playerData, events, skidConfig.SpeedMultiplier, skidConfig.MinControlMultiplier, skidConfig.Duration);
 
             refs.ObstacleCollision.Initialize(events);
+            var slowdownSystem = new SlowdownSystem(playerData, events, slowdownConfig.SpeedMultiplier, slowdownConfig.Duration);
+
             var livesSystem = new LivesSystem(
                 session, events, livesConfig.StartingLives, livesConfig.InvulnerabilityDuration);
 
             var catAISystem = new CatAISystem(
-                playerData, catData, session, events,
-                catConfig.PatrolDistance, catConfig.LungeDistance, catConfig.LungeWindowDuration, catConfig.FollowSpeed);
+                playerData, catData, session, events, catSpawnPosition,
+                catConfig.BaseSpeed, catConfig.LungeSpeedMultiplier, catConfig.LungeWindowDuration, catConfig.CatchRadius,
+                catConfig.VelocityTurnRateDegrees, catConfig.FacingTurnRateDegrees);
 
             var scoreSystem = new ScoreSystem(session, events);
 
@@ -73,12 +83,15 @@ namespace CheeseHeist.Adapters
             loop.AddSystem(difficultySystem);
             loop.AddSystem(trailCollisionSystem);
             loop.AddSystem(skidSystem);
+            loop.AddSystem(slowdownSystem);
             loop.AddSystem(livesSystem);
             loop.AddSystem(movementSystem);
             loop.AddSystem(trailSystem);
             loop.AddSystem(catAISystem);
             loop.AddSystem(idleTimeoutSystem);
             loop.AddResettable(scoreSystem);
+            loop.AddResettable(refs.PlayerBody);
+            loop.AddResettable(refs.LevelSpawner);
 
             var gameFlowSystem = new GameFlowSystem(session, playerData, events, loop, timeController);
 

@@ -72,8 +72,6 @@ namespace CheeseHeist.Systems
             _player.Velocity = new Vector3Data(0f, 0f, 0f);
             _player.SpeedMultiplier = 1f;
 
-            _events.RaiseRestartRequested();
-
             _session.State = GameState.Playing;
             _timeController.SetTimeScale(1f);
             _events.RaiseGameStateChanged(GameState.Playing);

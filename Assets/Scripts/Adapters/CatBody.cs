@@ -9,11 +9,10 @@ namespace CheeseHeist.Adapters
         {
             transform.position = new Vector3(data.Position.X, data.Position.Y, data.Position.Z);
 
-            float velSq = data.Velocity.X * data.Velocity.X + data.Velocity.Z * data.Velocity.Z;
-            if (velSq > 0.01f)
+            var facing = new Vector3(data.FacingDirection.X, 0f, data.FacingDirection.Z);
+            if (facing.sqrMagnitude > 0.01f)
             {
-                var lookDir = new Vector3(data.Velocity.X, 0f, data.Velocity.Z);
-                transform.rotation = Quaternion.LookRotation(lookDir, Vector3.up);
+                transform.rotation = Quaternion.LookRotation(facing, Vector3.up);
             }
         }
     }

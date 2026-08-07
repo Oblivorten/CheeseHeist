@@ -4,7 +4,7 @@ using CheeseHeist.Core;
 namespace CheeseHeist.Adapters
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class PlayerBody : MonoBehaviour
+    public class PlayerBody : MonoBehaviour, IResettable
     {
         [SerializeField] private float _rotationSpeedDegrees = 720f;
 
@@ -16,14 +16,13 @@ namespace CheeseHeist.Adapters
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
-            _spawnPosition = _rigidbody.position;
-            _spawnRotation = _rigidbody.rotation;
         }
 
-        public void Initialize(PlayerData playerData, GameEvents events)
+        public void Initialize(PlayerData playerData)
         {
             _playerData = playerData;
-            events.OnRestartRequested += HandleRestart;
+            _spawnPosition = _rigidbody.position;
+            _spawnRotation = _rigidbody.rotation;
         }
 
         public void SyncPositionToData()
@@ -36,17 +35,19 @@ namespace CheeseHeist.Adapters
         {
             var v = _playerData.Velocity;
             _rigidbody.linearVelocity = new Vector3(v.X, v.Y, v.Z);
+            _rigidbody.angularVelocity = Vector3.zero;
 
-            var horizontalVelocity = new Vector3(v.X, 0f, v.Z);
-            if (horizontalVelocity.sqrMagnitude > 0.01f)
+            var facing = _playerData.FacingDirection;
+            var facingVector = new Vector3(facing.X, 0f, facing.Z);
+            if (facingVector.sqrMagnitude > 0.0001f)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(horizontalVelocity.normalized, Vector3.up);
+                Quaternion targetRotation = Quaternion.LookRotation(facingVector.normalized, Vector3.up);
                 _rigidbody.MoveRotation(
                     Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, _rotationSpeedDegrees * Time.fixedDeltaTime));
             }
         }
 
-        private void HandleRestart()
+        public void ResetState()
         {
             _rigidbody.position = _spawnPosition;
             _rigidbody.rotation = _spawnRotation;

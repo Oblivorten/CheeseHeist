@@ -20,6 +20,7 @@ namespace CheeseHeist.Adapters
             if (collision.collider.CompareTag(_obstacleTag))
             {
                 _events?.RaisePlayerCollision();
+                _events?.RaiseObstacleHit();
             }
         }
     }

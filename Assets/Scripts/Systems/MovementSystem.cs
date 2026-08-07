@@ -4,15 +4,24 @@ namespace CheeseHeist.Systems
 {
     public class MovementSystem : ITickable
     {
+        private const float DegToRad = System.MathF.PI / 180f;
+
         private readonly PlayerData _player;
         private readonly GameSessionData _session;
         private readonly CameraData _camera;
         private readonly IMoveInputProvider _input;
         private readonly float _acceleration;
         private readonly float _deceleration;
+        private readonly float _velocityTurnRateDegrees;
+        private readonly float _facingTurnRateDegrees;
 
-        public MovementSystem(PlayerData player, GameSessionData session, CameraData camera,
-            IMoveInputProvider input, float acceleration, float deceleration)
+        private float _velocityAngle;
+        private float _facingAngle;
+        private float _speed;
+        private bool _hasDirection;
+
+        public MovementSystem(PlayerData player, GameSessionData session, CameraData camera, IMoveInputProvider input,
+            float acceleration, float deceleration, float velocityTurnRateDegrees, float facingTurnRateDegrees)
         {
             _player = player;
             _session = session;
@@ -20,6 +29,8 @@ namespace CheeseHeist.Systems
             _input = input;
             _acceleration = acceleration;
             _deceleration = deceleration;
+            _velocityTurnRateDegrees = velocityTurnRateDegrees;
+            _facingTurnRateDegrees = facingTurnRateDegrees;
         }
 
         public void Tick(float deltaTime)
@@ -28,6 +39,7 @@ namespace CheeseHeist.Systems
             float z = _input.Vertical;
 
             float magSq = x * x + z * z;
+            bool hasInput = magSq > 0.0001f;
             if (magSq > 1f)
             {
                 float mag = System.MathF.Sqrt(magSq);
@@ -38,26 +50,61 @@ namespace CheeseHeist.Systems
             float dirX = _camera.Right.X * x + _camera.Forward.X * z;
             float dirZ = _camera.Right.Z * x + _camera.Forward.Z * z;
 
-            float effectiveSpeed = _player.MoveSpeed * _player.SpeedMultiplier * _session.DifficultyMultiplier;
-            var target = new Vector3Data(dirX * effectiveSpeed, 0f, dirZ * effectiveSpeed);
+            float effectiveMaxSpeed = _player.MoveSpeed * _player.SpeedMultiplier * _session.DifficultyMultiplier;
 
-            bool speedingUp = SqrMag(target) > SqrMag(_player.Velocity);
-            float rate = speedingUp ? _acceleration : _deceleration;
+            if (hasInput)
+            {
+                float desiredAngle = System.MathF.Atan2(dirX, dirZ);
 
-            _player.Velocity = MoveTowards(_player.Velocity, target, rate * deltaTime);
+                if (!_hasDirection)
+                {
+                    _velocityAngle = desiredAngle;
+                    _facingAngle = desiredAngle;
+                    _hasDirection = true;
+                }
+                else
+                {
+                    _facingAngle = RotateAngleTowards(_facingAngle, desiredAngle, _facingTurnRateDegrees * DegToRad * deltaTime);
+
+                    float velocityTurnRate = _velocityTurnRateDegrees * _player.ControlMultiplier * DegToRad * deltaTime;
+                    _velocityAngle = RotateAngleTowards(_velocityAngle, desiredAngle, velocityTurnRate);
+                }
+
+                float speedRate = (effectiveMaxSpeed > _speed ? _acceleration : _deceleration) * _player.ControlMultiplier;
+                _speed = MoveTowardsFloat(_speed, effectiveMaxSpeed, speedRate * deltaTime);
+            }
+            else
+            {
+                float speedRate = _deceleration * _player.ControlMultiplier;
+                _speed = MoveTowardsFloat(_speed, 0f, speedRate * deltaTime);
+            }
+
+            _player.Velocity = new Vector3Data(
+                System.MathF.Sin(_velocityAngle) * _speed, 0f, System.MathF.Cos(_velocityAngle) * _speed);
+
+            _player.FacingDirection = new Vector3Data(
+                System.MathF.Sin(_facingAngle), 0f, System.MathF.Cos(_facingAngle));
         }
 
-        private static float SqrMag(Vector3Data v) => v.X * v.X + v.Z * v.Z;
-
-        private static Vector3Data MoveTowards(Vector3Data current, Vector3Data target, float maxDelta)
+        private static float MoveTowardsFloat(float current, float target, float maxDelta)
         {
-            float dx = target.X - current.X;
-            float dz = target.Z - current.Z;
-            float dist = System.MathF.Sqrt(dx * dx + dz * dz);
+            if (System.MathF.Abs(target - current) <= maxDelta) return target;
+            return current + System.MathF.Sign(target - current) * maxDelta;
+        }
 
-            if (dist <= maxDelta || dist == 0f) return target;
+        private static float RotateAngleTowards(float current, float target, float maxDelta)
+        {
+            float diff = NormalizeAngle(target - current);
+            if (diff > maxDelta) diff = maxDelta;
+            else if (diff < -maxDelta) diff = -maxDelta;
+            return current + diff;
+        }
 
-            return new Vector3Data(current.X + dx / dist * maxDelta, 0f, current.Z + dz / dist * maxDelta);
+        private static float NormalizeAngle(float angle)
+        {
+            while (angle > System.MathF.PI) angle -= 2f * System.MathF.PI;
+            while (angle < -System.MathF.PI) angle += 2f * System.MathF.PI;
+            return angle;
         }
     }
 }

@@ -43,6 +43,7 @@ namespace CheeseHeist.Systems
             if (collidingNow && !_wasColliding)
             {
                 _events.RaisePlayerCollision();
+                _events.RaiseTrailHit();
             }
 
             _wasColliding = collidingNow;
