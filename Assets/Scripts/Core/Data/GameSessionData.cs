@@ -7,5 +7,7 @@ namespace CheeseHeist.Core
         public float ElapsedTime;
         public float DifficultyMultiplier = 1f;
         public GameState State;
+        public bool IsInvulnerable;
+        public bool HasPlayerMovedOnce;
     }
 }

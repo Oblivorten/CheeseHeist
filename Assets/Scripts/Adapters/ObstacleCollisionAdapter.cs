@@ -9,19 +9,21 @@ namespace CheeseHeist.Adapters
         [SerializeField] private string _obstacleTag = "Obstacle";
 
         private GameEvents _events;
+        private GameSessionData _session;
 
-        public void Initialize(GameEvents events)
+        public void Initialize(GameEvents events, GameSessionData session)
         {
             _events = events;
+            _session = session;
         }
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (collision.collider.CompareTag(_obstacleTag))
-            {
-                _events?.RaisePlayerCollision();
-                _events?.RaiseObstacleHit();
-            }
+            if (!collision.collider.CompareTag(_obstacleTag)) return;
+            if (_session != null && _session.IsInvulnerable) return;
+
+            _events?.RaisePlayerCollision();
+            _events?.RaiseObstacleHit();
         }
     }
 }

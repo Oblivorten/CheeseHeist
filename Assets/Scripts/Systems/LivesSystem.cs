@@ -24,11 +24,12 @@ namespace CheeseHeist.Systems
 
         private void HandleCollision()
         {
-            if (_invulnerabilityTimer > 0f) return;
+            if (_session.IsInvulnerable) return;
             if (_session.Lives <= 0) return;
 
             _session.Lives--;
             _invulnerabilityTimer = _invulnerabilityDuration;
+            _session.IsInvulnerable = true;
             _events.RaiseLivesChanged(_session.Lives);
 
             if (_session.Lives <= 0)
@@ -39,9 +40,13 @@ namespace CheeseHeist.Systems
 
         public void Tick(float deltaTime)
         {
-            if (_invulnerabilityTimer > 0f)
+            if (_invulnerabilityTimer <= 0f) return;
+
+            _invulnerabilityTimer -= deltaTime;
+            if (_invulnerabilityTimer <= 0f)
             {
-                _invulnerabilityTimer -= deltaTime;
+                _invulnerabilityTimer = 0f;
+                _session.IsInvulnerable = false;
             }
         }
 
@@ -49,6 +54,7 @@ namespace CheeseHeist.Systems
         {
             _session.Lives = _startingLives;
             _invulnerabilityTimer = 0f;
+            _session.IsInvulnerable = false;
             _events.RaiseLivesChanged(_session.Lives);
         }
     }

@@ -52,6 +52,7 @@ namespace CheeseHeist.Systems
         public void Tick(float deltaTime)
         {
             if (_cat.IsCaught) return;
+            if (!_session.HasPlayerMovedOnce) return;
 
             if (_cat.State == CatState.Lunge)
             {
@@ -62,8 +63,8 @@ namespace CheeseHeist.Systems
                 }
             }
 
-            float speedMultiplier = _cat.State == CatState.Lunge ? _lungeSpeedMultiplier : 1f;
-            float speed = _baseSpeed * speedMultiplier * _session.DifficultyMultiplier;
+            float lungeMultiplier = _cat.State == CatState.Lunge ? _lungeSpeedMultiplier : 1f;
+            float speed = _baseSpeed * lungeMultiplier * _session.DifficultyMultiplier;
 
             float toPlayerX = _player.Position.X - _cat.Position.X;
             float toPlayerZ = _player.Position.Z - _cat.Position.Z;
@@ -81,8 +82,9 @@ namespace CheeseHeist.Systems
                 }
                 else
                 {
-                    _facingAngle = RotateAngleTowards(_facingAngle, desiredAngle, _facingTurnRateDegrees * DegToRad * deltaTime);
-                    _velocityAngle = RotateAngleTowards(_velocityAngle, desiredAngle, _velocityTurnRateDegrees * DegToRad * deltaTime);
+
+                    _facingAngle = RotateAngleTowards(_facingAngle, desiredAngle, _facingTurnRateDegrees * lungeMultiplier * DegToRad * deltaTime);
+                    _velocityAngle = RotateAngleTowards(_velocityAngle, desiredAngle, _velocityTurnRateDegrees * lungeMultiplier * DegToRad * deltaTime);
                 }
             }
 

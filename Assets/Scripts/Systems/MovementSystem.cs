@@ -2,7 +2,7 @@ using CheeseHeist.Core;
 
 namespace CheeseHeist.Systems
 {
-    public class MovementSystem : ITickable
+    public class MovementSystem : ITickable, IResettable
     {
         private const float DegToRad = System.MathF.PI / 180f;
 
@@ -65,7 +65,6 @@ namespace CheeseHeist.Systems
                 else
                 {
                     _facingAngle = RotateAngleTowards(_facingAngle, desiredAngle, _facingTurnRateDegrees * DegToRad * deltaTime);
-
                     float velocityTurnRate = _velocityTurnRateDegrees * _player.ControlMultiplier * DegToRad * deltaTime;
                     _velocityAngle = RotateAngleTowards(_velocityAngle, desiredAngle, velocityTurnRate);
                 }
@@ -84,6 +83,16 @@ namespace CheeseHeist.Systems
 
             _player.FacingDirection = new Vector3Data(
                 System.MathF.Sin(_facingAngle), 0f, System.MathF.Cos(_facingAngle));
+        }
+
+        public void ResetState()
+        {
+            _speed = 0f;
+            _velocityAngle = 0f;
+            _facingAngle = 0f;
+            _hasDirection = false;
+            _player.Velocity = new Vector3Data(0f, 0f, 0f);
+            _player.FacingDirection = new Vector3Data(0f, 0f, 1f);
         }
 
         private static float MoveTowardsFloat(float current, float target, float maxDelta)

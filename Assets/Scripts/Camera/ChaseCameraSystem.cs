@@ -11,30 +11,31 @@ namespace CheeseHeist.CameraSystem
         [SerializeField] private float _lookAheadHeight = 1f;
         [SerializeField] private float _followSmoothTime = 0.15f;
         [SerializeField] private float _rotationSmoothSpeed = 4f;
-        [SerializeField] private float _followDirectionTurnSpeed = 150f; 
+        [SerializeField] private float _followDirectionTurnSpeed = 150f;
 
         private Vector3 _velocity;
         private Vector3 _currentFollowDirection = Vector3.forward;
         private CameraData _cameraData;
+        private PlayerData _playerData;
 
-        public void Initialize(CameraData cameraData)
+        public void Initialize(CameraData cameraData, PlayerData playerData)
         {
             _cameraData = cameraData;
+            _playerData = playerData;
         }
 
         private void LateUpdate()
         {
             if (_target == null) return;
 
-            Vector3 targetForward = _target.forward;
-            targetForward.y = 0f;
-            if (targetForward.sqrMagnitude > 0.0001f)
+            Vector3 targetForward = _currentFollowDirection;
+            if (_playerData != null)
             {
-                targetForward.Normalize();
-            }
-            else
-            {
-                targetForward = _currentFollowDirection;
+                float speedSq = _playerData.Velocity.X * _playerData.Velocity.X + _playerData.Velocity.Z * _playerData.Velocity.Z;
+                if (speedSq > 0.01f)
+                {
+                    targetForward = new Vector3(_playerData.Velocity.X, 0f, _playerData.Velocity.Z).normalized;
+                }
             }
 
             _currentFollowDirection = Vector3.RotateTowards(

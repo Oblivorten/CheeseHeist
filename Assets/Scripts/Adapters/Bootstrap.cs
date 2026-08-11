@@ -19,7 +19,7 @@ namespace CheeseHeist.Adapters
             IdleConfig idleConfig)
         {
             var loop = new Loop();
-            var playerData = new PlayerData { MoveSpeed = 5f };
+            var playerData = new PlayerData { MoveSpeed = movementConfig.BaseSpeed };
             var session = new GameSessionData();
             var cameraData = new CameraData();
             var timeController = new UnityTimeController();
@@ -45,27 +45,33 @@ namespace CheeseHeist.Adapters
                 session, events, difficultyConfig.RampDuration, difficultyConfig.MaxMultiplier);
 
             var movementSystem = new MovementSystem(
-                 playerData, session, cameraData, inputRouter,
-                 movementConfig.Acceleration, movementConfig.Deceleration,
-                 movementConfig.VelocityTurnRateDegrees, movementConfig.FacingTurnRateDegrees);
+                playerData, session, cameraData, inputRouter,
+                movementConfig.Acceleration, movementConfig.Deceleration,
+                movementConfig.VelocityTurnRateDegrees, movementConfig.FacingTurnRateDegrees);
             refs.PlayerBody.Initialize(playerData);
 
             if (refs.Camera != null)
             {
-                refs.Camera.Initialize(cameraData);
+                refs.Camera.Initialize(cameraData, playerData);
             }
 
+            float maxReachableSpeed = movementConfig.BaseSpeed * difficultyConfig.MaxMultiplier;
+            int trailCapacity = (int)System.MathF.Ceiling(
+                trailConfig.Lifetime * maxReachableSpeed / trailConfig.SpawnDistance * trailConfig.CapacitySafetyMargin);
+
             var trailSystem = new TrailSystem(
-                playerData, trailConfig.SpawnDistance, trailConfig.Lifetime, trailConfig.Capacity, trailConfig.GroundHeight);
-            refs.TrailView.Initialize(trailConfig.Capacity);
+                playerData, trailConfig.SpawnDistance, trailConfig.Lifetime, trailCapacity, trailConfig.GroundHeight);
+            refs.TrailView.Initialize(trailCapacity);
 
             var trailCollisionSystem = new TrailCollisionSystem(
-                playerData, trailSystem, events, skidConfig.CollisionRadius, skidConfig.GraceSegments);
-            var skidSystem = new SkidSystem(
-                playerData, events, skidConfig.SpeedMultiplier, skidConfig.MinControlMultiplier, skidConfig.Duration);
+                playerData, trailSystem, session, events, skidConfig.CollisionRadius, skidConfig.GraceSegments);
 
-            refs.ObstacleCollision.Initialize(events);
-            var slowdownSystem = new SlowdownSystem(playerData, events, slowdownConfig.SpeedMultiplier, slowdownConfig.Duration);
+            refs.ObstacleCollision.Initialize(events, session);
+
+            var playerDebuffSystem = new PlayerDebuffSystem(playerData);
+
+            events.OnTrailHit += () => playerDebuffSystem.Apply(skidConfig.SpeedMultiplier, skidConfig.MinControlMultiplier, skidConfig.Duration);
+            events.OnObstacleHit += () => playerDebuffSystem.Apply(slowdownConfig.SpeedMultiplier, 1f, slowdownConfig.Duration);
 
             var livesSystem = new LivesSystem(
                 session, events, livesConfig.StartingLives, livesConfig.InvulnerabilityDuration);
@@ -78,17 +84,16 @@ namespace CheeseHeist.Adapters
             var scoreSystem = new ScoreSystem(session, events);
 
             var idleTimeoutSystem = new IdleTimeoutSystem(
-                playerData, events, idleConfig.IdleThreshold, idleConfig.MovementEpsilon);
+                playerData, session, events, idleConfig.IdleThreshold, idleConfig.MovementEpsilon);
 
             loop.AddSystem(difficultySystem);
             loop.AddSystem(trailCollisionSystem);
-            loop.AddSystem(skidSystem);
-            loop.AddSystem(slowdownSystem);
+            loop.AddSystem(playerDebuffSystem);
             loop.AddSystem(livesSystem);
             loop.AddSystem(movementSystem);
             loop.AddSystem(trailSystem);
-            loop.AddSystem(catAISystem);
             loop.AddSystem(idleTimeoutSystem);
+            loop.AddSystem(catAISystem);
             loop.AddResettable(scoreSystem);
             loop.AddResettable(refs.PlayerBody);
             loop.AddResettable(refs.LevelSpawner);

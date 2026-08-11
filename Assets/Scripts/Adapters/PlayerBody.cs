@@ -20,6 +20,11 @@ namespace CheeseHeist.Adapters
 
         public void Initialize(PlayerData playerData)
         {
+            if (_rigidbody == null)
+            {
+                _rigidbody = GetComponent<Rigidbody>();
+            }
+
             _playerData = playerData;
             _spawnPosition = _rigidbody.position;
             _spawnRotation = _rigidbody.rotation;

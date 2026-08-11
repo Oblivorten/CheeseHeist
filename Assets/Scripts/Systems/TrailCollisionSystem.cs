@@ -6,15 +6,18 @@ namespace CheeseHeist.Systems
     {
         private readonly PlayerData _player;
         private readonly TrailSystem _trail;
+        private readonly GameSessionData _session;
         private readonly GameEvents _events;
         private readonly float _collisionRadius;
         private readonly int _graceSegments;
+
         private bool _wasColliding;
 
-        public TrailCollisionSystem(PlayerData player, TrailSystem trail, GameEvents events, float collisionRadius, int graceSegments)
+        public TrailCollisionSystem(PlayerData player, TrailSystem trail, GameSessionData session, GameEvents events, float collisionRadius, int graceSegments)
         {
             _player = player;
             _trail = trail;
+            _session = session;
             _events = events;
             _collisionRadius = collisionRadius;
             _graceSegments = graceSegments;
@@ -30,7 +33,6 @@ namespace CheeseHeist.Systems
             {
                 var segment = segments[i];
                 if (!segment.IsActive) continue;
-
                 if (currentSequence - segment.SpawnSequence <= _graceSegments) continue;
 
                 if (DistanceXZ(_player.Position, segment.Position) <= _collisionRadius)
@@ -40,7 +42,7 @@ namespace CheeseHeist.Systems
                 }
             }
 
-            if (collidingNow && !_wasColliding)
+            if (collidingNow && !_wasColliding && !_session.IsInvulnerable)
             {
                 _events.RaisePlayerCollision();
                 _events.RaiseTrailHit();

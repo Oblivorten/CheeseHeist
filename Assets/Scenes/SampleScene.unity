@@ -2468,6 +2468,7 @@ MonoBehaviour:
     Camera: {fileID: 330585548}
   _activeInputSource: 0
   _movementConfig:
+    BaseSpeed: 5
     Acceleration: 20
     Deceleration: 25
     VelocityTurnRateDegrees: 720
@@ -2475,8 +2476,9 @@ MonoBehaviour:
   _trailConfig:
     SpawnDistance: 0.4
     Lifetime: 9
-    Capacity: 80
     GroundHeight: 0.05
+    FadeDuration: 1
+    CapacitySafetyMargin: 1.2
   _skidConfig:
     CollisionRadius: 0.4
     GraceSegments: 6
@@ -2492,7 +2494,7 @@ MonoBehaviour:
   _catConfig:
     SpawnHeight: 1
     InitialOffsetDistance: 4
-    BaseSpeed: 2.5
+    BaseSpeed: 2
     LungeSpeedMultiplier: 1.8
     LungeWindowDuration: 5
     CatchRadius: 0.8
