@@ -20,5 +20,6 @@ namespace CheeseHeist.Adapters
         public MainMenuController MainMenu;
         public LevelSpawner LevelSpawner;
         public ChaseCameraSystem Camera;
+        public AudioController Audio;
     }
 }

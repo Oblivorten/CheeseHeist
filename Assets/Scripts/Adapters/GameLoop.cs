@@ -26,6 +26,7 @@ namespace CheeseHeist.Adapters
 
             _refs.LevelSpawner.Initialize(events, _levelSpawnConfig, _cheeseConfig, _refs.PlayerBody.transform);
             _refs.LevelSpawner.SpawnInitialLevel();
+            _refs.Audio.Initialize(_context.Events);
 
             var bootstrap = new Bootstrap();
             _context = bootstrap.CreateGame(

@@ -67,7 +67,7 @@ namespace CheeseHeist.Systems
         {
             if (_session.State != GameState.Results) return;
 
-            _loop.ResetAll(); // MovementSystem теперь тоже часть этого сброса — отдельно Velocity/SpeedMultiplier не трогаем
+            _loop.ResetAll(); 
 
             _session.State = GameState.Playing;
             _timeController.SetTimeScale(1f);
