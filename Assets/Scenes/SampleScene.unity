@@ -2454,7 +2454,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.373
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2911,11 +2911,12 @@ MonoBehaviour:
   _sfxSource: {fileID: 1174788876}
   _musicSource: {fileID: 1794849622}
   _cheeseCollected: {fileID: 8300000, guid: 572f2bc1c93876a499af3affa7d5501f, type: 3}
+  _cheeseCollectedVolume: 0.48
   _lifeLost: {fileID: 8300000, guid: 47e0fe0af9b96a046abbb71f88911447, type: 3}
+  _lifeLostVolume: 1.24
   _caught: {fileID: 8300000, guid: e331b58f96b1b744c9c6f9e64fd95fa8, type: 3}
-  _uiClick: {fileID: 8300000, guid: ced1028690b4d5340a8f4a57963a7231, type: 3}
-  _menuMusic: {fileID: 8300000, guid: 572f2bc1c93876a499af3affa7d5501f, type: 3}
-  _gameplayMusic: {fileID: 8300000, guid: 572f2bc1c93876a499af3affa7d5501f, type: 3}
+  _caughtVolume: 0.51
+  _gameplayMusic: {fileID: 8300000, guid: 17847937a16936243b214c913f233f77, type: 3}
 --- !u!1 &1377110815
 GameObject:
   m_ObjectHideFlags: 0
@@ -3891,7 +3892,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.103
   m_Pitch: 1
   Loop: 1
   Mute: 0

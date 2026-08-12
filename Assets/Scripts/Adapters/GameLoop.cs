@@ -26,7 +26,6 @@ namespace CheeseHeist.Adapters
 
             _refs.LevelSpawner.Initialize(events, _levelSpawnConfig, _cheeseConfig, _refs.PlayerBody.transform);
             _refs.LevelSpawner.SpawnInitialLevel();
-            _refs.Audio.Initialize(_context.Events);
 
             var bootstrap = new Bootstrap();
             _context = bootstrap.CreateGame(
@@ -36,6 +35,7 @@ namespace CheeseHeist.Adapters
             _refs.HUD.Initialize(_context.Events, _context.GameFlow, _context.Session, _context.Player, _context.Cat);
             _refs.ResultsScreen.Initialize(_context.Events, _context.GameFlow, _context.Session);
             _refs.MainMenu.Initialize(_context.Events, _context.GameFlow);
+            _refs.Audio.Initialize(_context.Events);
         }
 
         private void FixedUpdate()
