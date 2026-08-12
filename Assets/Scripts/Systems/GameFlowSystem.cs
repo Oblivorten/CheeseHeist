@@ -45,6 +45,8 @@ namespace CheeseHeist.Systems
 
             _session.State = GameState.Results;
             _events.RaiseGameStateChanged(GameState.Results);
+
+            _events.RaiseRunEnded();
         }
 
         public void TogglePause()

@@ -21,6 +21,7 @@ namespace CheeseHeist.Adapters
             var loop = new Loop();
             var playerData = new PlayerData { MoveSpeed = movementConfig.BaseSpeed };
             var session = new GameSessionData();
+            var highScoreSystem = new HighScoreSystem(session, events, new PlayerPrefsHighScoreStore());
             var cameraData = new CameraData();
             var timeController = new UnityTimeController();
 

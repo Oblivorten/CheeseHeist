@@ -15,6 +15,8 @@ namespace CheeseHeist.Core
         public event Action<float> OnDifficultyChanged;
         public event Action<GameState> OnGameStateChanged;
         public event Action OnIdleTimeout;
+        public event Action<int> OnNewHighScore;
+        public event System.Action OnRunEnded;
 
         public void RaisePlayerCollision() => OnPlayerCollision?.Invoke();
         public void RaiseTrailHit() => OnTrailHit?.Invoke();
@@ -27,5 +29,7 @@ namespace CheeseHeist.Core
         public void RaiseDifficultyChanged(float multiplier) => OnDifficultyChanged?.Invoke(multiplier);
         public void RaiseGameStateChanged(GameState state) => OnGameStateChanged?.Invoke(state);
         public void RaiseIdleTimeout() => OnIdleTimeout?.Invoke();
+        public void RaiseNewHighScore(int score) => OnNewHighScore?.Invoke(score);
+        public void RaiseRunEnded() => OnRunEnded?.Invoke();
     }
 }
